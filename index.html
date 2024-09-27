@@ -367,60 +367,209 @@
     <div id="dynamicVotingArea" class="mb-4"></div>
  
     <div class="row">
-        <div class="col-md-12">
-            <div class="card settings-card">
-                <div class="card-body">
-                    <h5> V.1.1.0 </h5>
-                    <h2>Select Participating Countries and Set Odds <br> (11-50 countries semi-finals starting with 27, odds -> lower is better):</h2>
-                    <div class="row">
-                        <div class="col-md-8">
-                            <div class="section-header">Current Contestants</div>
-                            <div class="overflow-auto" style="max-height: 400px;">
-                                <table id="currentContestants" class="selection-table w-100"></table>
+    <div class="col-md-12">
+        <div class="card settings-card">
+            <div class="card-body">
+                <h5>V.1.1.0</h5>
+                <h2>Select Participating Countries and Set Odds<br> (11-50 countries semi-finals starting with 27, odds -> lower is better):</h2>
+                <h3 id="selectedCount" style="color: black;">Total Selected Countries: 0/50</h3>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="accordion" id="countryAccordion">
+                            <!-- Current Contestants -->
+<div class="accordion-item">
+    <h2 class="accordion-header" id="headingCurrent">
+        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCurrent" aria-expanded="true" aria-controls="collapseCurrent">
+            Current Contestants
+        </button>
+    </h2>
+    <div id="collapseCurrent" class="accordion-collapse collapse show" aria-labelledby="headingCurrent" data-bs-parent="#countryAccordion">
+        <div class="accordion-body">
+            <div class="overflow-auto" style="max-height: 400px;">
+                <table id="currentContestants" class="selection-table w-100"></table>
+            </div>
+            <button id="selectAllCurrent" class="btn btn-primary mt-2">Select All Current</button>
+            <button id="unselectAllCurrent" class="btn btn-secondary mt-2 ml-2">Unselect All Current</button>
+        </div>
+    </div>
+</div>
+
+<!-- Old Contestants -->
+<div class="accordion-item">
+    <h2 class="accordion-header" id="headingOld">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOld" aria-expanded="false" aria-controls="collapseOld">
+            Old Contestants
+        </button>
+    </h2>
+    <div id="collapseOld" class="accordion-collapse collapse" aria-labelledby="headingOld" data-bs-parent="#countryAccordion">
+        <div class="accordion-body">
+            <div class="overflow-auto" style="max-height: 400px;">
+                <table id="oldContestants" class="selection-table w-100"></table>
+            </div>
+            <button id="selectAllOld" class="btn btn-primary mt-2">Select All Old</button>
+            <button id="unselectAllOld" class="btn btn-secondary mt-2 ml-2">Unselect All Old</button>
+        </div>
+    </div>
+</div>
+
+<!-- Rest of Europe -->
+<div class="accordion-item">
+    <h2 class="accordion-header" id="headingRestEurope">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseRestEurope" aria-expanded="false" aria-controls="collapseRestEurope">
+            Rest of Europe
+        </button>
+    </h2>
+    <div id="collapseRestEurope" class="accordion-collapse collapse" aria-labelledby="headingRestEurope" data-bs-parent="#countryAccordion">
+        <div class="accordion-body">
+            <div class="overflow-auto" style="max-height: 400px;">
+                <table id="restEuropeContestants" class="selection-table w-100"></table>
+            </div>
+            <button id="selectAllRestOfEurope" class="btn btn-primary mt-2">Select All Rest of Europe</button>
+            <button id="unselectAllRestOfEurope" class="btn btn-secondary mt-2 ml-2">Unselect All Rest of Europe</button>
+        </div>
+    </div>
+</div>
+
+<!-- North America -->
+<div class="accordion-item">
+    <h2 class="accordion-header" id="headingNorthAmerica">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNorthAmerica" aria-expanded="false" aria-controls="collapseNorthAmerica">
+            North America
+        </button>
+    </h2>
+    <div id="collapseNorthAmerica" class="accordion-collapse collapse" aria-labelledby="headingNorthAmerica" data-bs-parent="#countryAccordion">
+        <div class="accordion-body">
+            <div class="overflow-auto" style="max-height: 400px;">
+                <table id="northAmericaContestants" class="selection-table w-100"></table>
+            </div>
+            <button id="selectAllNorthAmerica" class="btn btn-primary mt-2">Select All North America</button>
+            <button id="unselectAllNorthAmerica" class="btn btn-secondary mt-2 ml-2">Unselect All North America</button>
+        </div>
+    </div>
+</div>
+
+<!-- South America -->
+<div class="accordion-item">
+    <h2 class="accordion-header" id="headingSouthAmerica">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSouthAmerica" aria-expanded="false" aria-controls="collapseSouthAmerica">
+            South America
+        </button>
+    </h2>
+    <div id="collapseSouthAmerica" class="accordion-collapse collapse" aria-labelledby="headingSouthAmerica" data-bs-parent="#countryAccordion">
+        <div class="accordion-body">
+            <div class="overflow-auto" style="max-height: 400px;">
+                <table id="southAmericaContestants" class="selection-table w-100"></table>
+            </div>
+            <button id="selectAllSouthAmerica" class="btn btn-primary mt-2">Select All South America</button>
+            <button id="unselectAllSouthAmerica" class="btn btn-secondary mt-2 ml-2">Unselect All South America</button>
+        </div>
+    </div>
+</div>
+
+<!-- Africa -->
+<div class="accordion-item">
+    <h2 class="accordion-header" id="headingAfrica">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAfrica" aria-expanded="false" aria-controls="collapseAfrica">
+            Africa
+        </button>
+    </h2>
+    <div id="collapseAfrica" class="accordion-collapse collapse" aria-labelledby="headingAfrica" data-bs-parent="#countryAccordion">
+        <div class="accordion-body">
+            <div class="overflow-auto" style="max-height: 400px;">
+                <table id="africaContestants" class="selection-table w-100"></table>
+            </div>
+            <button id="selectAllAfrica" class="btn btn-primary mt-2">Select All Africa</button>
+            <button id="unselectAllAfrica" class="btn btn-secondary mt-2 ml-2">Unselect All Africa</button>
+        </div>
+    </div>
+</div>
+
+<!-- Asia -->
+<div class="accordion-item">
+    <h2 class="accordion-header" id="headingAsia">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAsia" aria-expanded="false" aria-controls="collapseAsia">
+            Asia
+        </button>
+    </h2>
+    <div id="collapseAsia" class="accordion-collapse collapse" aria-labelledby="headingAsia" data-bs-parent="#countryAccordion">
+        <div class="accordion-body">
+            <div class="overflow-auto" style="max-height: 400px;">
+                <table id="asiaContestants" class="selection-table w-100"></table>
+            </div>
+            <button id="selectAllAsia" class="btn btn-primary mt-2">Select All Asia</button>
+            <button id="unselectAllAsia" class="btn btn-secondary mt-2 ml-2">Unselect All Asia</button>
+        </div>
+    </div>
+</div>
+
+<!-- Oceania -->
+<div class="accordion-item">
+    <h2 class="accordion-header" id="headingOceania">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOceania" aria-expanded="false" aria-controls="collapseOceania">
+            Oceania
+        </button>
+    </h2>
+    <div id="collapseOceania" class="accordion-collapse collapse" aria-labelledby="headingOceania" data-bs-parent="#countryAccordion">
+        <div class="accordion-body">
+            <div class="overflow-auto" style="max-height: 400px;">
+                <table id="oceaniaContestants" class="selection-table w-100"></table>
+            </div>
+            <button id="selectAllOceania" class="btn btn-primary mt-2">Select All Oceania</button>
+            <button id="unselectAllOceania" class="btn btn-secondary mt-2 ml-2">Unselect All Oceania</button>
+        </div>
+    </div>
+</div>    
+                            <!-- Custom Contestants -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingCustom">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCustom" aria-expanded="false" aria-controls="collapseCustom">
+                                        Custom Contestants
+                                    </button>
+                                </h2>
+                                <div id="collapseCustom" class="accordion-collapse collapse" aria-labelledby="headingCustom" data-bs-parent="#countryAccordion">
+                                    <div class="accordion-body">
+                                        <div class="overflow-auto" style="max-height: 400px;">
+                                            <table id="customContestants" class="selection-table w-100"></table>
+                                        </div>
+                                        <button id="addCustomContestant" class="btn btn-primary mt-2">Add Custom Contestant</button>
+                                    </div>
+                                </div>
                             </div>
-                            <button id="selectAllCurrent" class="btn btn-primary mt-2">Select All Current</button>
-                            <button id="unselectAllCurrent" class="btn btn-secondary mt-2 ml-2">Unselect All Current</button>
+    
+                        </div>
+
+                    <button id="show_custom" class="btn btn-primary mt-2">Click here for custom contestants.</button>
+                    <div id="custom_showing" style="display: none;" class="row">
+                        <div class="col-md-4">
+                            <div class="section-header">Custom Contestants</div>
+                            <div class="overflow-auto" style="max-height: 400px;">
+                                <table id="customContestants" class="selection-table w-100"></table>
+                            </div>
+                            <button id="selectAllCustom" class="btn btn-primary mt-2">Select All Custom</button>
+                            <button id="unselectAllCustom" class="btn btn-secondary mt-2 ml-2">Unselect All Custom</button>
                         </div>
                         <div class="col-md-4">
-                            <div class="section-header">Old Contestants</div>
+                            <div class="section-header">Add Contestants</div>
                             <div class="overflow-auto" style="max-height: 400px;">
-                                <table id="oldContestants" class="selection-table w-100"></table>
+                                <div class="selection-table w-100">
+                                    <input placeholder="Name" id="custom_name"/>
+                                    <input placeholder="Code (E.g: Swiss is ch)" id="custom_code"/>
+                                    <input placeholder="Flag (E.g: Direct link.png)" id="custom_flag"/>
+                                    <button class="btn btn-success w-100 mt-4" id="add_contestant">Add +</button>
+                                </div>
                             </div>
-                            <button id="selectAllOld" class="btn btn-primary mt-2">Select All Old</button>
-                            <button id="unselectAllOld" class="btn btn-secondary mt-2 ml-2">Unselect All Old</button>
                         </div>
-                        <button id="show_custom" class="btn btn-primary mt-2">Click here for custom contestants.</button>
-                        <div id="custom_showing" style="display: none;" class="row">
-                            <div class="col-md-4">
-                                <div class="section-header">Custom Contestants</div>
-                                <div class="overflow-auto" style="max-height: 400px;">
-                                    <table id="customContestants" class="selection-table w-100"></table>
-                                </div>
-                                <button id="selectAllCustom" class="btn btn-primary mt-2">Select All Custom</button>
-                                <button id="unselectAllCustom" class="btn btn-secondary mt-2 ml-2">Unselect All Custom</button>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="section-header">Add Contestants</div>
-                                <div class="overflow-auto" style="max-height: 400px;">
-                                    <div class="selection-table w-100">
-                                        <input placeholder="Name" id="custom_name"/>
-                                        <input placeholder="Code (E.g: Swiss is ch)" id="custom_code"/>
-                                        <input placeholder="Flag (E.g: Direct link.png)" id="custom_flag"/>
-                                        <button  class="btn btn-success w-100 mt-4" id="add_contestant">Add +</button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="section-header">Save Contestants</div>
-                                <div class="overflow-auto" style="max-height: 400px;">
-                                    <div class="selection-table w-100">
-                                        <button class="btn btn-success w-100 mt-4" id="export_custom">Export</button>
-                                        <button  class="btn btn-info w-100 mt-4" id="import_custom">Import</button>
-                                    </div>
+                        <div class="col-md-4">
+                            <div class="section-header">Save Contestants</div>
+                            <div class="overflow-auto" style="max-height: 400px;">
+                                <div class="selection-table w-100">
+                                    <button class="btn btn-success w-100 mt-4" id="export_custom">Export</button>
+                                    <button class="btn btn-info w-100 mt-4" id="import_custom">Import</button>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
                     <div class="row mt-4">
     <div class="col-md-6">
         <div class="card">
@@ -510,13 +659,57 @@ chartContainer.id = 'chartContainer';
 document.querySelector('.eurovision-simulator').appendChild(chartContainer);
 const currentContestants = [
     "Albania", "Armenia", "Australia", "Austria", "Azerbaijan", "Belgium", "Bulgaria", "Croatia", "Cyprus", "Czechia",
-    "Denmark", "Estonia", "Finland", "France", "Georgia", "Germany", "Greece", "Iceland", "Ireland", "Israel", "Italy", "Latvia", "Lithuania", "Luxembourg", "Malta", "Moldova", "Montenegro", "Netherlands", "North Macedonia", "Norway",
+    "Denmark", "Estonia", "Finland", "France", "Georgia", "Germany", "Greece", "Iceland", "Ireland", "Israel", "Italy", 
+    "Latvia", "Lithuania", "Luxembourg", "Malta", "Moldova", "Montenegro", "Netherlands", "North Macedonia", "Norway",
     "Poland", "Portugal", "Romania", "San Marino", "Serbia", "Slovenia", "Spain", "Sweden", "Switzerland", "Ukraine",
     "United Kingdom"
 ];
- 
+
+// Old Contestants (Former Participants)
 const oldContestants = [
     "Andorra", "Belarus", "Bosnia & Herz.", "Hungary", "Monaco", "Morocco", "Russia", "Slovakia", "Turkey"
+];
+
+// Rest of Europe (Non-EU/Non-Eurovision)
+const restEuropeContestants = [
+    "Liechtenstein", "Kosovo", "Vatican City", "Faroe Islands", "Greenland"
+];
+
+// North America
+const northAmericaContestants = [
+    "Antigua and Barbuda", "Bahamas", "Barbados", "Belize", "Canada", "Costa Rica", "Cuba", "Dominica", "Dominican Republic",
+    "El Salvador", "Grenada", "Guatemala", "Haiti", "Honduras", "Jamaica", "Mexico", "Nicaragua", "Panama", 
+    "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines", "Trinidad and Tobago", "United States"
+];
+
+// South America
+const southAmericaContestants = [
+    "Argentina", "Bolivia", "Brazil", "Chile", "Colombia", "Ecuador", "Guyana", "Paraguay", "Peru", "Suriname", "Uruguay", "Venezuela"
+];
+
+// Africa (without Morocco)
+const africaContestants = [
+    "Algeria", "Angola", "Benin", "Botswana", "Burkina Faso", "Burundi", "Cabo Verde", "Cameroon", "Central African Republic",
+    "Chad", "Comoros", "Congo", "Democratic Republic of the Congo", "Djibouti", 
+    "Egypt", "Equatorial Guinea", "Eritrea", "Eswatini", "Ethiopia", "Gabon", "Gambia", "Ghana", "Guinea", "Guinea-Bissau", 
+    "Ivory Coast", "Kenya", "Lesotho", "Liberia", "Libya", "Madagascar", "Malawi", "Mali", "Mauritania", "Mauritius", 
+    "Mozambique", "Namibia", "Niger", "Nigeria", "Rwanda", "São Tomé and Príncipe", "Senegal", "Seychelles", 
+    "Sierra Leone", "Somalia", "South Africa", "South Sudan", "Sudan", "Tanzania", "Togo", "Tunisia", "Uganda", "Zambia", "Zimbabwe"
+];
+
+// Asia (without Armenia, Azerbaijan, Cyprus, Georgia, Israel)
+const asiaContestants = [
+    "Afghanistan", "Bahrain", "Bangladesh", "Bhutan", "Brunei", "Cambodia", "China", "India", "Indonesia", 
+    "Iran", "Iraq", "Japan", "Jordan", "Kazakhstan", "Kuwait", "Kyrgyzstan", "Laos", "Lebanon", "Malaysia", 
+    "Maldives", "Mongolia", "Myanmar", "Nepal", "North Korea", "Oman", "Pakistan", "Palestine", "Philippines", 
+    "Qatar", "Saudi Arabia", "Singapore", "South Korea", "Sri Lanka", "Syria", "Taiwan", "Tajikistan", "Thailand", 
+    "Timor-Leste", "Turkmenistan", "United Arab Emirates", "Uzbekistan", "Vietnam", "Yemen"
+];
+
+// Oceania (without Australia)
+const oceaniaContestants = [
+    "Fiji", "Kiribati", "Marshall Islands", "Micronesia", "Nauru", "New Zealand", "Palau", "Papua New Guinea", 
+    "Samoa", "Solomon Islands", "Tonga", "Tuvalu", "Vanuatu"
 ];
  
 var customContestants = []
@@ -546,6 +739,7 @@ var customcountryCodeMap = {}
  
 function getCountryCode(countryName) {
     const countryCodeMap = {
+        // Current Contestants (Europe)
         "Albania": "al", "Armenia": "am", "Australia": "au", "Austria": "at", "Azerbaijan": "az",
         "Belgium": "be", "Bulgaria": "bg", "Croatia": "hr", "Cyprus": "cy", "Czechia": "cz",
         "Denmark": "dk", "Estonia": "ee", "Finland": "fi", "France": "fr", "Georgia": "ge",
@@ -554,9 +748,52 @@ function getCountryCode(countryName) {
         "Moldova": "md", "Montenegro": "me", "Netherlands": "nl", "North Macedonia": "mk", "Norway": "no",
         "Poland": "pl", "Portugal": "pt", "Romania": "ro", "San Marino": "sm", "Serbia": "rs",
         "Slovenia": "si", "Spain": "es", "Sweden": "se", "Switzerland": "ch", "Ukraine": "ua",
-        "United Kingdom": "gb", "Andorra": "ad", "Belarus": "by", "Bosnia & Herz.": "ba",
-        "Hungary": "hu", "Monaco": "mc", "Morocco": "ma", "Russia": "ru", "Slovakia": "sk",
-        "Turkey": "tr"
+        "United Kingdom": "gb",
+
+        // Old Contestants
+        "Andorra": "ad", "Belarus": "by", "Bosnia & Herz.": "ba", "Hungary": "hu", "Monaco": "mc",
+        "Morocco": "ma", "Russia": "ru", "Slovakia": "sk", "Turkey": "tr",
+
+        // Rest of Europe
+        "Liechtenstein": "li", "Kosovo": "xk", "Vatican City": "va", "Faroe Islands": "fo", "Greenland": "gl",
+
+        // North America
+        "Antigua and Barbuda": "ag", "Bahamas": "bs", "Barbados": "bb", "Belize": "bz", "Canada": "ca",
+        "Costa Rica": "cr", "Cuba": "cu", "Dominica": "dm", "Dominican Republic": "do", "El Salvador": "sv",
+        "Grenada": "gd", "Guatemala": "gt", "Haiti": "ht", "Honduras": "hn", "Jamaica": "jm",
+        "Mexico": "mx", "Nicaragua": "ni", "Panama": "pa", "Saint Kitts and Nevis": "kn", 
+        "Saint Lucia": "lc", "Saint Vincent and the Grenadines": "vc", "Trinidad and Tobago": "tt", "United States": "us",
+
+        // South America
+        "Argentina": "ar", "Bolivia": "bo", "Brazil": "br", "Chile": "cl", "Colombia": "co",
+        "Ecuador": "ec", "Guyana": "gy", "Paraguay": "py", "Peru": "pe", "Suriname": "sr", "Uruguay": "uy", "Venezuela": "ve",
+
+        // Africa
+        "Algeria": "dz", "Angola": "ao", "Benin": "bj", "Botswana": "bw", "Burkina Faso": "bf",
+        "Burundi": "bi", "Cabo Verde": "cv", "Cameroon": "cm", "Central African Republic": "cf", "Chad": "td",
+        "Comoros": "km", "Congo": "cg", "Democratic Republic of the Congo": "cd", "Djibouti": "dj", "Egypt": "eg",
+        "Equatorial Guinea": "gq", "Eritrea": "er", "Eswatini": "sz", "Ethiopia": "et", "Gabon": "ga", "Gambia": "gm",
+        "Ghana": "gh", "Guinea": "gn", "Guinea-Bissau": "gw", "Ivory Coast": "ci", "Kenya": "ke", 
+        "Lesotho": "ls", "Liberia": "lr", "Libya": "ly", "Madagascar": "mg", "Malawi": "mw", "Mali": "ml", 
+        "Mauritania": "mr", "Mauritius": "mu", "Mozambique": "mz", "Namibia": "na", "Niger": "ne", "Nigeria": "ng", 
+        "Rwanda": "rw", "São Tomé and Príncipe": "st", "Senegal": "sn", "Seychelles": "sc", "Sierra Leone": "sl", 
+        "Somalia": "so", "South Africa": "za", "South Sudan": "ss", "Sudan": "sd", "Tanzania": "tz", "Togo": "tg", 
+        "Tunisia": "tn", "Uganda": "ug", "Zambia": "zm", "Zimbabwe": "zw",
+
+        // Asia
+        "Afghanistan": "af", "Bahrain": "bh", "Bangladesh": "bd", "Bhutan": "bt", "Brunei": "bn", 
+        "Cambodia": "kh", "China": "cn", "India": "in", "Indonesia": "id", "Iran": "ir", "Iraq": "iq", "Japan": "jp", 
+        "Jordan": "jo", "Kazakhstan": "kz", "Kuwait": "kw", "Kyrgyzstan": "kg", "Laos": "la", "Lebanon": "lb", 
+        "Malaysia": "my", "Maldives": "mv", "Mongolia": "mn", "Myanmar": "mm", "Nepal": "np", "North Korea": "kp", 
+        "Oman": "om", "Pakistan": "pk", "Palestine": "ps", "Philippines": "ph", "Qatar": "qa", "Saudi Arabia": "sa", 
+        "Singapore": "sg", "South Korea": "kr", "Sri Lanka": "lk", "Syria": "sy", "Taiwan": "tw", "Tajikistan": "tj", 
+        "Thailand": "th", "Timor-Leste": "tl", "Turkmenistan": "tm", "United Arab Emirates": "ae", "Uzbekistan": "uz", 
+        "Vietnam": "vn", "Yemen": "ye",
+
+        // Oceania (without Australia)
+        "Fiji": "fj", "Kiribati": "ki", "Marshall Islands": "mh", "Micronesia": "fm", "Nauru": "nr", 
+        "New Zealand": "nz", "Palau": "pw", "Papua New Guinea": "pg", "Samoa": "ws", "Solomon Islands": "sb", 
+        "Tonga": "to", "Tuvalu": "tv", "Vanuatu": "vu"
     };
     return (countryCodeMap[countryName] || customcountryCodeMap[countryName]) || "unknown";
 }
@@ -599,6 +836,12 @@ function createCountryTable(containerId, countries) {
 createCountryTable('currentContestants', currentContestants);
 createCountryTable('oldContestants', oldContestants);
 createCountryTable('customContestants', customContestants);
+createCountryTable('restEuropeContestants', restEuropeContestants);
+createCountryTable('northAmericaContestants', northAmericaContestants);
+createCountryTable('southAmericaContestants', southAmericaContestants);
+createCountryTable('africaContestants', africaContestants);
+createCountryTable('asiaContestants', asiaContestants);
+createCountryTable('oceaniaContestants', oceaniaContestants);
  
  
 const generateButton = document.getElementById('generateButton');
@@ -623,6 +866,18 @@ const importCustomContestantButton = document.getElementById('import_custom');
 const exportCustomContestantButton = document.getElementById('export_custom');
 const randomizeJuryButton = document.getElementById('randomizeJuryButton');
 const randomizeTeleButton = document.getElementById('randomizeTeleButton');
+const selectAllRestOfEuropeButton = document.getElementById('selectAllRestOfEurope');
+const unselectAllRestOfEuropeButton = document.getElementById('unselectAllRestOfEurope');
+const selectAllNorthAmericaButton = document.getElementById('selectAllNorthAmerica');
+const unselectAllNorthAmericaButton = document.getElementById('unselectAllNorthAmerica');
+const selectAllSouthAmericaButton = document.getElementById('selectAllSouthAmerica');
+const unselectAllSouthAmericaButton = document.getElementById('unselectAllSouthAmerica');
+const selectAllAfricaButton = document.getElementById('selectAllAfrica');
+const unselectAllAfricaButton = document.getElementById('unselectAllAfrica');
+const selectAllAsiaButton = document.getElementById('selectAllAsia');
+const unselectAllAsiaButton = document.getElementById('unselectAllAsia');
+const selectAllOceaniaButton = document.getElementById('selectAllOceania');
+const unselectAllOceaniaButton = document.getElementById('unselectAllOceania');
  
 let semiFinal1Results, semiFinal2Results, finalResults;
 let currentSemiFinal = 1;
@@ -654,9 +909,9 @@ function calculateGenreBonus(selectedCountries) {
     Object.entries(genreCounts).forEach(([genre, count]) => {
         const percentage = (count / totalCountries) * 100;
         if (percentage > 30) {
-            genreBonuses[genre] = 1.05;
+            genreBonuses[genre] = 1.03;
         } else if (percentage <= 10) {
-            genreBonuses[genre] = 0.9;
+            genreBonuses[genre] = 0.97;
         } else {
             genreBonuses[genre] = 1;
         }
@@ -740,26 +995,55 @@ function validateOddsDifference(event) {
     }
 }
  
-[selectAllCurrentButton, selectAllOldButton, selectAllCustomButton].forEach(button => {
-    button.addEventListener('click', () => {
-        console.log(`Select All button clicked: ${button.id}`);
-        const tableId = button.id.replace('selectAll', '').toLowerCase();
-        document.querySelectorAll(`#${tableId}Contestants .country-checkbox`).forEach(checkbox => {
-            checkbox.checked = true;
+const buttonToTableMap = {
+    selectAllRestOfEurope: 'restEuropeContestants',
+    unselectAllRestOfEurope: 'restEuropeContestants',
+    selectAllNorthAmerica: 'northAmericaContestants',
+    unselectAllNorthAmerica: 'northAmericaContestants',
+    selectAllSouthAmerica: 'southAmericaContestants',
+    unselectAllSouthAmerica: 'southAmericaContestants',
+    selectAllAfrica: 'africaContestants',
+    unselectAllAfrica: 'africaContestants',
+    selectAllAsia: 'asiaContestants',
+    unselectAllAsia: 'asiaContestants',
+    selectAllOceania: 'oceaniaContestants',
+    unselectAllOceania: 'oceaniaContestants',
+    selectAllCurrent: 'currentContestants',
+    unselectAllCurrent: 'currentContestants',
+    selectAllOld: 'oldContestants',
+    unselectAllOld: 'oldContestants',
+    selectAllCustom: 'customContestants',
+    unselectAllCustom: 'customContestants',
+};
+
+// Select All buttons
+Object.keys(buttonToTableMap).forEach(buttonId => {
+    if (buttonId.startsWith('selectAll')) {
+        const button = document.getElementById(buttonId);
+        button.addEventListener('click', () => {
+            console.log(`Select All button clicked: ${button.id}`);
+            const tableId = buttonToTableMap[button.id];
+            document.querySelectorAll(`#${tableId} .country-checkbox`).forEach(checkbox => {
+                checkbox.checked = true;
+            });
+            updateAQCheckboxStatus();
         });
-        updateAQCheckboxStatus();
-    });
+    }
 });
 
-[unselectAllCurrentButton, unselectAllOldButton, unselectAllCustomButton].forEach(button => {
-    button.addEventListener('click', () => {
-        console.log(`Unselect All button clicked: ${button.id}`);
-        const tableId = button.id.replace('unselectAll', '').toLowerCase();
-        document.querySelectorAll(`#${tableId}Contestants .country-checkbox`).forEach(checkbox => {
-            checkbox.checked = false;
+// Unselect All buttons
+Object.keys(buttonToTableMap).forEach(buttonId => {
+    if (buttonId.startsWith('unselectAll')) {
+        const button = document.getElementById(buttonId);
+        button.addEventListener('click', () => {
+            console.log(`Unselect All button clicked: ${button.id}`);
+            const tableId = buttonToTableMap[button.id];
+            document.querySelectorAll(`#${tableId} .country-checkbox`).forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            updateAQCheckboxStatus();
         });
-        updateAQCheckboxStatus();
-    });
+    }
 });
  
 function makeid(length) {
@@ -1242,13 +1526,22 @@ function runContest(countries, genreBonuses) {
 }
 
 function updateAQCheckboxStatus() {
+    // Select all country checkboxes across all continents and categories
     const totalSelectedCountries = 
         document.querySelectorAll('#currentContestants .country-checkbox:checked').length +
         document.querySelectorAll('#oldContestants .country-checkbox:checked').length +
-        document.querySelectorAll('#customContestants .country-checkbox:checked').length;
+        document.querySelectorAll('#customContestants .country-checkbox:checked').length +
+        document.querySelectorAll('#restEuropeContestants .country-checkbox:checked').length +
+        document.querySelectorAll('#northAmericaContestants .country-checkbox:checked').length +
+        document.querySelectorAll('#southAmericaContestants .country-checkbox:checked').length +
+        document.querySelectorAll('#africaContestants .country-checkbox:checked').length +
+        document.querySelectorAll('#asiaContestants .country-checkbox:checked').length +
+        document.querySelectorAll('#oceaniaContestants .country-checkbox:checked').length;
 
+    // Check if 27 or more countries have been selected
     const shouldEnableAQ = totalSelectedCountries >= 27;
 
+    // Enable or disable the AQ checkboxes based on the total count
     document.querySelectorAll('.country-checkbox').forEach(checkbox => {
         const aqCheckbox = checkbox.nextElementSibling.nextElementSibling;
         if (checkbox.checked && shouldEnableAQ) {
@@ -1259,8 +1552,20 @@ function updateAQCheckboxStatus() {
         }
     });
 
+    // Update the <h3> element with the selected count
+    const selectedCountElement = document.getElementById('selectedCount');
+    selectedCountElement.textContent = `Total Selected Countries: ${totalSelectedCountries}/50`;
+
+    // Change color based on the number of selected countries
+    if (totalSelectedCountries < 11 || totalSelectedCountries > 50) {
+        selectedCountElement.style.color = 'red';
+    } else {
+        selectedCountElement.style.color = 'black'; 
+    }
+
     console.log(`Total selected countries: ${totalSelectedCountries}, AQ enabled: ${shouldEnableAQ}`);
 }
+
 
 function addCheckboxListeners(checkbox) {
     checkbox.addEventListener('change', () => {
@@ -2145,10 +2450,18 @@ document.getElementById('whatsNewButton').addEventListener('click', () => {
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="whatsNewModalLabel">What's New in Eurovision Simulator</h5>
+                        <h5 class="modal-title" id="whatsNewModalLabel">What's New in Eurovision Simulator <h6 style="color:green;"> Added, </h6><h6 style="color:orange;">Remake, </h6><h6 style="color:black;">Global Bugfixes </h6></h6>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
+            <h6>Version 1.1.1 Updates and Bugfixes:</h6>
+                        <ul>
+			  <li style="color:green;"><ADDED> New built-in countries from the whole world! 
+			   <li style="color:green;"><ADDED> Counter of uploaded countries into the season.
+		 	   <li style="color:orange; size:5px"><REMAKE> I had to remake odds a little bit! Unnoticeable little changes.
+			   <li>Next update is going to be much bigger.</li>
+                        </ul>
+        
 			<h6>Version 1.1.0 Updates and Bugfixes:</h6>
                         <ul>
 			  <li style="color:green;"><ADDED> New mode which allows you to remove jury from the Semi-Finals. More systems soon!
@@ -2162,7 +2475,7 @@ document.getElementById('whatsNewButton').addEventListener('click', () => {
 			   <li style="color:green;"><ADDED> this "What's New?" button to display recent changes and updates</li>
                             <li style="color:green;"><ADDED> new genres: Heavy Metal, Techno, and Rap</li>
                             <li>Genres are now displayed in a grid layout for better space utilization</li>
-			    <li>Whole menu changed it's location and is now horizontal </li>
+			                <li>Whole menu changed it's location and is now horizontal </li>
                             <li>Dynamic finale table now appears <u>above the charts</u></li>
                             <li>Added "AQ" label next to golden checkboxes auto-qualifier checkboxes for clarity</li>
                             <li>Fixed tiebreaker system for more accurate results</li>
