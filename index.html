@@ -358,7 +358,10 @@
                     <button id="simulateSemiDrawButton" class="btn btn-primary mb-2" disabled>SIMULATE SEMI-FINALE DRAW</button>
                     <button id="simulateButton" class="btn btn-secondary mb-2" disabled>SIMULATE SEMI-FINALE</button>
                     <button id="dynamicVotingButton" class="btn btn-success mb-2" disabled>DYNAMIC FINALE VOTING</button>
-                    <button id="resetButton" class="btn btn-danger mb-2">RESET CURRENT SIMULATION</button>
+                    <button id="resetButton" class="btn btn-danger mb-2">RESET CURRENT SIMULATION</button> 
+                    <button id="saveScenarioButton" class="btn btn-success mb-2">SAVE SCENARIO</button>
+                        <button id="loadScenarioButton" class="btn btn-info mb-2">LOAD SCENARIO</button>
+                        <input type="file" id="loadScenarioInput" style="display: none;" accept=".json">
                 </div>
             </div>
         </div>
@@ -370,7 +373,7 @@
     <div class="col-md-12">
         <div class="card settings-card">
             <div class="card-body">
-                <h5>V.1.1.1</h5>
+                <h5>V.1.2.0</h5>
                 <h2>Select Participating Countries and Set Odds<br> (11-50 countries semi-finals starting with 27, odds -> lower is better):</h2>
                 <h3 id="selectedCount" style="color: black;">Total Selected Countries: 0/50</h3>
                 <div class="row">
@@ -393,7 +396,7 @@
         </div>
     </div>
 </div>
-
+ 
 <!-- Old Contestants -->
 <div class="accordion-item">
     <h2 class="accordion-header" id="headingOld">
@@ -411,7 +414,7 @@
         </div>
     </div>
 </div>
-
+ 
 <!-- Rest of Europe -->
 <div class="accordion-item">
     <h2 class="accordion-header" id="headingRestEurope">
@@ -429,7 +432,7 @@
         </div>
     </div>
 </div>
-
+ 
 <!-- North America -->
 <div class="accordion-item">
     <h2 class="accordion-header" id="headingNorthAmerica">
@@ -447,7 +450,7 @@
         </div>
     </div>
 </div>
-
+ 
 <!-- South America -->
 <div class="accordion-item">
     <h2 class="accordion-header" id="headingSouthAmerica">
@@ -465,7 +468,7 @@
         </div>
     </div>
 </div>
-
+ 
 <!-- Africa -->
 <div class="accordion-item">
     <h2 class="accordion-header" id="headingAfrica">
@@ -483,7 +486,7 @@
         </div>
     </div>
 </div>
-
+ 
 <!-- Asia -->
 <div class="accordion-item">
     <h2 class="accordion-header" id="headingAsia">
@@ -501,7 +504,7 @@
         </div>
     </div>
 </div>
-
+ 
 <!-- Oceania -->
 <div class="accordion-item">
     <h2 class="accordion-header" id="headingOceania">
@@ -535,9 +538,9 @@
                                     </div>
                                 </div>
                             </div>
-    
+ 
                         </div>
-
+ 
                     <button id="show_custom" class="btn btn-primary mt-2">Click here for custom contestants.</button>
                     <div id="custom_showing" style="display: none;" class="row">
                         <div class="col-md-4">
@@ -622,7 +625,7 @@
 </div>
                     <button id="randomizeGenresButton" class="btn btn-secondary w-100 mt-2">Randomize Genres</button>
                     <button id="randomizeGenreLikeabilityButton" class="btn btn-secondary w-100 mt-2">Randomize Genre Likeability</button>
-                    
+ 
                     <div class="mt-4">
                         <label for="revealTime" class="form-label">Time before revealing qualifier (seconds):</label>
                         <select id="revealTime" class="form-select">
@@ -664,29 +667,29 @@ const currentContestants = [
     "Poland", "Portugal", "Romania", "San Marino", "Serbia", "Slovenia", "Spain", "Sweden", "Switzerland", "Ukraine",
     "United Kingdom"
 ];
-
+ 
 // Old Contestants (Former Participants)
 const oldContestants = [
     "Andorra", "Belarus", "Bosnia & Herz.", "Hungary", "Monaco", "Morocco", "Russia", "Slovakia", "Turkey"
 ];
-
+ 
 // Rest of Europe (Non-EU/Non-Eurovision)
 const restEuropeContestants = [
     "Liechtenstein", "Kosovo", "Vatican City", "Faroe Islands", "Greenland"
 ];
-
+ 
 // North America
 const northAmericaContestants = [
     "Antigua and Barbuda", "Bahamas", "Barbados", "Belize", "Canada", "Costa Rica", "Cuba", "Dominica", "Dominican Republic",
     "El Salvador", "Grenada", "Guatemala", "Haiti", "Honduras", "Jamaica", "Mexico", "Nicaragua", "Panama", 
     "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines", "Trinidad and Tobago", "United States"
 ];
-
+ 
 // South America
 const southAmericaContestants = [
     "Argentina", "Bolivia", "Brazil", "Chile", "Colombia", "Ecuador", "Guyana", "Paraguay", "Peru", "Suriname", "Uruguay", "Venezuela"
 ];
-
+ 
 // Africa (without Morocco)
 const africaContestants = [
     "Algeria", "Angola", "Benin", "Botswana", "Burkina Faso", "Burundi", "Cabo Verde", "Cameroon", "Central African Republic",
@@ -696,7 +699,7 @@ const africaContestants = [
     "Mozambique", "Namibia", "Niger", "Nigeria", "Rwanda", "São Tomé and Príncipe", "Senegal", "Seychelles", 
     "Sierra Leone", "Somalia", "South Africa", "South Sudan", "Sudan", "Tanzania", "Togo", "Tunisia", "Uganda", "Zambia", "Zimbabwe"
 ];
-
+ 
 // Asia (without Armenia, Azerbaijan, Cyprus, Georgia, Israel)
 const asiaContestants = [
     "Afghanistan", "Bahrain", "Bangladesh", "Bhutan", "Brunei", "Cambodia", "China", "India", "Indonesia", 
@@ -705,7 +708,7 @@ const asiaContestants = [
     "Qatar", "Saudi Arabia", "Singapore", "South Korea", "Sri Lanka", "Syria", "Taiwan", "Tajikistan", "Thailand", 
     "Timor-Leste", "Turkmenistan", "United Arab Emirates", "Uzbekistan", "Vietnam", "Yemen"
 ];
-
+ 
 // Oceania (without Australia)
 const oceaniaContestants = [
     "Fiji", "Kiribati", "Marshall Islands", "Micronesia", "Nauru", "New Zealand", "Palau", "Papua New Guinea", 
@@ -749,25 +752,25 @@ function getCountryCode(countryName) {
         "Poland": "pl", "Portugal": "pt", "Romania": "ro", "San Marino": "sm", "Serbia": "rs",
         "Slovenia": "si", "Spain": "es", "Sweden": "se", "Switzerland": "ch", "Ukraine": "ua",
         "United Kingdom": "gb",
-
+ 
         // Old Contestants
         "Andorra": "ad", "Belarus": "by", "Bosnia & Herz.": "ba", "Hungary": "hu", "Monaco": "mc",
         "Morocco": "ma", "Russia": "ru", "Slovakia": "sk", "Turkey": "tr",
-
+ 
         // Rest of Europe
         "Liechtenstein": "li", "Kosovo": "xk", "Vatican City": "va", "Faroe Islands": "fo", "Greenland": "gl",
-
+ 
         // North America
         "Antigua and Barbuda": "ag", "Bahamas": "bs", "Barbados": "bb", "Belize": "bz", "Canada": "ca",
         "Costa Rica": "cr", "Cuba": "cu", "Dominica": "dm", "Dominican Republic": "do", "El Salvador": "sv",
         "Grenada": "gd", "Guatemala": "gt", "Haiti": "ht", "Honduras": "hn", "Jamaica": "jm",
         "Mexico": "mx", "Nicaragua": "ni", "Panama": "pa", "Saint Kitts and Nevis": "kn", 
         "Saint Lucia": "lc", "Saint Vincent and the Grenadines": "vc", "Trinidad and Tobago": "tt", "United States": "us",
-
+ 
         // South America
         "Argentina": "ar", "Bolivia": "bo", "Brazil": "br", "Chile": "cl", "Colombia": "co",
         "Ecuador": "ec", "Guyana": "gy", "Paraguay": "py", "Peru": "pe", "Suriname": "sr", "Uruguay": "uy", "Venezuela": "ve",
-
+ 
         // Africa
         "Algeria": "dz", "Angola": "ao", "Benin": "bj", "Botswana": "bw", "Burkina Faso": "bf",
         "Burundi": "bi", "Cabo Verde": "cv", "Cameroon": "cm", "Central African Republic": "cf", "Chad": "td",
@@ -779,7 +782,7 @@ function getCountryCode(countryName) {
         "Rwanda": "rw", "São Tomé and Príncipe": "st", "Senegal": "sn", "Seychelles": "sc", "Sierra Leone": "sl", 
         "Somalia": "so", "South Africa": "za", "South Sudan": "ss", "Sudan": "sd", "Tanzania": "tz", "Togo": "tg", 
         "Tunisia": "tn", "Uganda": "ug", "Zambia": "zm", "Zimbabwe": "zw",
-
+ 
         // Asia
         "Afghanistan": "af", "Bahrain": "bh", "Bangladesh": "bd", "Bhutan": "bt", "Brunei": "bn", 
         "Cambodia": "kh", "China": "cn", "India": "in", "Indonesia": "id", "Iran": "ir", "Iraq": "iq", "Japan": "jp", 
@@ -789,7 +792,7 @@ function getCountryCode(countryName) {
         "Singapore": "sg", "South Korea": "kr", "Sri Lanka": "lk", "Syria": "sy", "Taiwan": "tw", "Tajikistan": "tj", 
         "Thailand": "th", "Timor-Leste": "tl", "Turkmenistan": "tm", "United Arab Emirates": "ae", "Uzbekistan": "uz", 
         "Vietnam": "vn", "Yemen": "ye",
-
+ 
         // Oceania (without Australia)
         "Fiji": "fj", "Kiribati": "ki", "Marshall Islands": "mh", "Micronesia": "fm", "Nauru": "nr", 
         "New Zealand": "nz", "Palau": "pw", "Papua New Guinea": "pg", "Samoa": "ws", "Solomon Islands": "sb", 
@@ -883,11 +886,11 @@ let semiFinal1Results, semiFinal2Results, finalResults;
 let currentSemiFinal = 1;
  
 let selectedVotingSystem = 'current';
-
+ 
 document.getElementById('votingSystem').addEventListener('change', (e) => {
     selectedVotingSystem = e.target.value;
 });
-
+ 
 function randomizeGenres() {
     document.querySelectorAll('.genre-select').forEach(select => {
         const randomIndex = Math.floor(Math.random() * genres.length);
@@ -919,35 +922,35 @@ function calculateGenreBonus(selectedCountries) {
  
     return genreBonuses;
 }
-
+ 
 randomizeJuryButton.addEventListener('click', () => {
     const minOdds = parseInt(document.getElementById('minOdds').value);
     const maxOdds = parseInt(document.getElementById('maxOdds').value);
     const maxDifference = parseInt(document.getElementById('maxOddsDifference').value);
-
+ 
     document.querySelectorAll('.odds-inputs').forEach(container => {
         const juryInput = container.querySelector('.jury-odds-input');
         const teleInput = container.querySelector('.tele-odds-input');
-
+ 
         const teleOdds = parseInt(teleInput.value);
         const juryOdds = getRandomOdds(minOdds, maxOdds, teleOdds, maxDifference);
-
+ 
         juryInput.value = juryOdds;
     });
 });
-
+ 
 randomizeTeleButton.addEventListener('click', () => {
     const minOdds = parseInt(document.getElementById('minOdds').value);
     const maxOdds = parseInt(document.getElementById('maxOdds').value);
     const maxDifference = parseInt(document.getElementById('maxOddsDifference').value);
-
+ 
     document.querySelectorAll('.odds-inputs').forEach(container => {
         const juryInput = container.querySelector('.jury-odds-input');
         const teleInput = container.querySelector('.tele-odds-input');
-
+ 
         const juryOdds = parseInt(juryInput.value);
         const teleOdds = getRandomOdds(minOdds, maxOdds, juryOdds, maxDifference);
-
+ 
         teleInput.value = teleOdds;
     });
 });
@@ -956,20 +959,20 @@ randomizeButton.addEventListener('click', () => {
     const minOdds = parseInt(document.getElementById('minOdds').value);
     const maxOdds = parseInt(document.getElementById('maxOdds').value);
     const maxDifference = parseInt(document.getElementById('maxOddsDifference').value);
-
+ 
     document.querySelectorAll('.odds-inputs').forEach(container => {
         const juryInput = container.querySelector('.jury-odds-input');
         const teleInput = container.querySelector('.tele-odds-input');
-
+ 
         const baseOdds = Math.floor(Math.random() * (maxOdds - minOdds + 1)) + minOdds;
         const juryOdds = baseOdds;
         const teleOdds = getRandomOdds(minOdds, maxOdds, baseOdds, maxDifference);
-
+ 
         juryInput.value = juryOdds;
         teleInput.value = teleOdds;
     });
 });
-
+ 
 document.querySelectorAll('.jury-odds-input, .tele-odds-input').forEach(input => {
     input.addEventListener('change', validateOddsDifference);
 });
@@ -979,16 +982,16 @@ defaultOddsButton.addEventListener('click', () => {
         input.value = 100;
     });
 });
-
+ 
 function validateOddsDifference(event) {
     const container = event.target.closest('.odds-inputs');
     const juryInput = container.querySelector('.jury-odds-input');
     const teleInput = container.querySelector('.tele-odds-input');
     const maxDifference = parseInt(document.getElementById('maxOddsDifference').value);
-
+ 
     const juryOdds = parseInt(juryInput.value);
     const teleOdds = parseInt(teleInput.value);
-
+ 
     if (Math.abs(juryOdds - teleOdds) > maxDifference) {
         alert(`The difference between Jury and Televoting odds cannot exceed ${maxDifference}.`);
         event.target.value = event.target === juryInput ? teleOdds : juryOdds;
@@ -1015,7 +1018,7 @@ const buttonToTableMap = {
     selectAllCustom: 'customContestants',
     unselectAllCustom: 'customContestants',
 };
-
+ 
 // Select All buttons
 Object.keys(buttonToTableMap).forEach(buttonId => {
     if (buttonId.startsWith('selectAll')) {
@@ -1030,7 +1033,7 @@ Object.keys(buttonToTableMap).forEach(buttonId => {
         });
     }
 });
-
+ 
 // Unselect All buttons
 Object.keys(buttonToTableMap).forEach(buttonId => {
     if (buttonId.startsWith('unselectAll')) {
@@ -1087,9 +1090,9 @@ addCustomContestantButton.addEventListener('click', () => {
     document.getElementById('custom_name').value = "";
     document.getElementById('custom_code').value = "";
     document.getElementById('custom_flag').value = "";
-
+ 
     document.querySelectorAll('#customContestants .country-checkbox').forEach(addCheckboxListeners);
-
+ 
     updateAQCheckboxStatus();
 });
  
@@ -1165,10 +1168,10 @@ function hideSettingsShowSimulation() {
 function populateSemiFinalTable(results) {
     const table = document.getElementById('semiFinalTable').getElementsByTagName('tbody')[0];
     table.innerHTML = '';
-
+ 
     const sortedCountries = Object.entries(results)
         .sort(([a], [b]) => a.localeCompare(b));
-
+ 
     sortedCountries.forEach(([country, data]) => {
         const row = table.insertRow();
         row.innerHTML = `
@@ -1178,6 +1181,243 @@ function populateSemiFinalTable(results) {
             </td>
             <td>${data.genre}</td>
         `;
+    });
+}
+// Function to collect current scenario data from the UI
+function collectScenarioData() {
+    const scenario = {
+        // Version marker for the scenario file, can be useful for future compatibility
+        version: "1.2.0-scenario", // Example version
+        selectedCountriesData: [],
+        genreLikeability: {}, 
+        votingSystem: document.getElementById('votingSystem').value, 
+        revealTime: parseInt(document.getElementById('revealTime').value), 
+        minOdds: parseInt(document.getElementById('minOdds').value), 
+        maxOdds: parseInt(document.getElementById('maxOdds').value), 
+        maxOddsDifference: parseInt(document.getElementById('maxOddsDifference').value), 
+        // Data related to custom contestants
+        customContestants: [...window.customContestants], // Assuming 'customContestants' is a global array
+        customcountryCodeMap: {...window.customcountryCodeMap}, // Assuming 'customcountryCodeMap' is a global object
+        customContestantsFlag: [...window.customContestantsFlag] // Assuming 'customContestantsFlag' is a global array
+    };
+ 
+    // Collect data for each selected country
+    document.querySelectorAll('.country-checkbox:checked').forEach(checkbox => { 
+        const tdElement = checkbox.closest('td'); // Get the parent table cell <td>
+        if (!tdElement) {
+            console.warn('Could not find parent <td> for checkbox:', checkbox.value);
+            return; // Skip if structure is not as expected
+        }
+ 
+        // Find elements within this specific <td>
+        const containerDiv = tdElement.querySelector('.checkbox-container'); 
+        const oddsInputsDiv = tdElement.querySelector('.odds-inputs'); 
+        const genreSelect = tdElement.querySelector('.genre-select'); 
+ 
+        if (containerDiv && oddsInputsDiv && genreSelect) {
+            const juryOddsInput = oddsInputsDiv.querySelector('.jury-odds-input'); 
+            const teleOddsInput = oddsInputsDiv.querySelector('.tele-odds-input'); 
+            const aqCheckbox = containerDiv.querySelector('.aq-checkbox'); 
+ 
+            scenario.selectedCountriesData.push({
+                name: checkbox.value,
+                juryOdds: parseInt(juryOddsInput.value),
+                teleOdds: parseInt(teleOddsInput.value),
+                genre: genreSelect.value,
+                isAQ: aqCheckbox.checked
+            });
+        } else {
+            console.warn('Could not find all required elements for country:', checkbox.value, 'within its <td>');
+        }
+    });
+ 
+    // Collect genre likeability settings
+    genres.forEach(genre => { // 'genres' is a global array in your script
+        const inputElement = document.querySelector(`.genre-likeability[data-genre="${genre}"]`); 
+        if (inputElement) {
+            scenario.genreLikeability[genre] = parseInt(inputElement.value);
+        } else {
+             scenario.genreLikeability[genre] = 3; // Default value if element somehow not found
+        }
+    });
+    return scenario;
+}
+ 
+// Function to apply loaded scenario data to the UI
+function applyScenarioData(scenario) {
+    // 1. Gently reset current selections (without triggering full reset logic)
+    document.querySelectorAll('.country-checkbox, .aq-checkbox').forEach(cb => cb.checked = false); 
+    document.querySelectorAll('.jury-odds-input, .tele-odds-input').forEach(input => input.value = 100); 
+    document.querySelectorAll('.genre-select').forEach(select => select.selectedIndex = 0); 
+ 
+    // 2. Apply custom contestants data if present in the scenario
+    // This assumes 'createCountryTable' and 'addCSS' functions are globally available from your original script
+    if (scenario.customContestants && scenario.customcountryCodeMap && scenario.customContestantsFlag && typeof createCountryTable === 'function') {
+        window.customContestants = [...scenario.customContestants]; 
+        window.customcountryCodeMap = {...scenario.customcountryCodeMap}; 
+        window.customContestantsFlag = [...scenario.customContestantsFlag]; 
+ 
+        createCountryTable('customContestants', window.customContestants); 
+ 
+        if (typeof addCSS === 'function') {
+            window.customContestants.forEach(name => {
+                const code = window.customcountryCodeMap[name];
+                // Find the flag URL for this custom country.
+                // This assumes customContestantsFlag stores URLs in the same order as customContestants names.
+                const countryIndex = window.customContestants.indexOf(name);
+                if (code && window.customContestantsFlag[countryIndex]) {
+                     addCSS(`.flag-icon-${code}{ background-image: url("${window.customContestantsFlag[countryIndex]}"); }`); 
+                }
+            });
+        }
+        // Re-attach listeners for newly created custom checkboxes. 'addCheckboxListeners' is from your script
+        if (typeof addCheckboxListeners === 'function') {
+            document.querySelectorAll('#customContestants .country-checkbox').forEach(addCheckboxListeners); 
+        }
+    }
+ 
+    // 3. Apply selected countries' specific data
+    scenario.selectedCountriesData.forEach(countryData => {
+        // Find the checkbox for the country. This query might need to be more specific if country names can appear in multiple tables.
+        const checkbox = document.querySelector(`.country-checkbox[value="${countryData.name}"]`);
+        if (checkbox) {
+            checkbox.checked = true;
+            const td = checkbox.closest('td'); // Get parent <td>
+            if (td) {
+                const juryInput = td.querySelector('.jury-odds-input');
+                if (juryInput) juryInput.value = countryData.juryOdds;
+ 
+                const teleInput = td.querySelector('.tele-odds-input');
+                if (teleInput) teleInput.value = countryData.teleOdds;
+ 
+                const genreSel = td.querySelector('.genre-select');
+                if (genreSel) genreSel.value = countryData.genre;
+ 
+                const aqCb = td.querySelector('.checkbox-container .aq-checkbox'); // Check within .checkbox-container
+                if (aqCb) aqCb.checked = countryData.isAQ;
+            }
+        } else {
+            console.warn('Could not find checkbox for country:', countryData.name, 'when applying scenario.');
+        }
+    });
+ 
+    // 4. Apply genre likeability
+    // 'genreLikeability' (the object) and 'genres' (the array) are global in your script
+    if (scenario.genreLikeability && typeof genreLikeability === 'object' && genreLikeability !== null) {
+        genres.forEach(genre => { 
+            const inputElement = document.querySelector(`.genre-likeability[data-genre="${genre}"]`); 
+            if (inputElement && scenario.genreLikeability[genre] !== undefined) {
+                inputElement.value = scenario.genreLikeability[genre];
+                genreLikeability[genre] = scenario.genreLikeability[genre]; // Update the JS variable as well
+            }
+        });
+    }
+ 
+    // 5. Apply global settings
+    const votingSystemEl = document.getElementById('votingSystem'); 
+    if (votingSystemEl) votingSystemEl.value = scenario.votingSystem || 'current'; // Default to 'current' if not in scenario
+ 
+    const revealTimeEl = document.getElementById('revealTime'); 
+    if (revealTimeEl) revealTimeEl.value = scenario.revealTime || 10; // Default to 10
+ 
+    const minOddsEl = document.getElementById('minOdds'); 
+    if (minOddsEl) minOddsEl.value = scenario.minOdds || 1; // Default to 1
+ 
+    const maxOddsEl = document.getElementById('maxOdds'); 
+    if (maxOddsEl) maxOddsEl.value = scenario.maxOdds || 500; // Default to 500
+ 
+    const maxOddsDiffEl = document.getElementById('maxOddsDifference'); 
+    if (maxOddsDiffEl) maxOddsDiffEl.value = scenario.maxOddsDifference || 75; // Default to 75
+ 
+    // 6. Crucial: Refresh UI states, especially AQ checkbox statuses
+    // 'updateAQCheckboxStatus' is a global function in your script
+    if (typeof updateAQCheckboxStatus === 'function') {
+        updateAQCheckboxStatus(); 
+    } else {
+        console.error('updateAQCheckboxStatus function is not defined. AQ states might be incorrect.');
+    }
+}
+ 
+// Event Listener for the "SAVE SCENARIO" button
+const saveScenarioButtonEl = document.getElementById('saveScenarioButton');
+if (saveScenarioButtonEl) {
+    saveScenarioButtonEl.addEventListener('click', () => {
+        const scenarioData = collectScenarioData();
+        const scenarioJSON = JSON.stringify(scenarioData, null, 2);
+ 
+        // Suggest a default filename including the current date
+        const today = new Date();
+        const dateString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        const defaultFileName = `eurovision_scenario_${dateString}`;
+ 
+        // Ask the user for a filename, providing the default one
+        let userFileName = prompt("Enter a filename for your scenario (e.g., MyFavoriteESC)", defaultFileName);
+ 
+        // If the user clicks "Cancel" or leaves it empty, use the default name
+        if (userFileName === null || userFileName.trim() === "") {
+            userFileName = defaultFileName;
+        }
+ 
+        // Ensure the filename ends with .json
+        if (!userFileName.toLowerCase().endsWith('.json')) {
+            userFileName += '.json';
+        }
+ 
+        const a = document.createElement('a');
+        a.href = `data:text/json;charset=utf-8,${encodeURIComponent(scenarioJSON)}`;
+        a.download = userFileName; // Use the user-provided or default filename
+ 
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+ 
+        alert(`Scenario has been saved as ${userFileName}!`); // Inform the user about the actual filename
+    });
+}
+ 
+// Event Listener for the "LOAD SCENARIO" button (which triggers the hidden file input)
+const loadScenarioButtonEl = document.getElementById('loadScenarioButton');
+if (loadScenarioButtonEl) {
+    loadScenarioButtonEl.addEventListener('click', () => {
+        const loadScenarioInputEl = document.getElementById('loadScenarioInput'); 
+        if (loadScenarioInputEl) {
+            loadScenarioInputEl.click(); // Programmatically click the hidden file input
+        }
+    });
+}
+ 
+// Event Listener for the hidden file input (when a file is selected)
+const loadScenarioInputEl = document.getElementById('loadScenarioInput'); 
+if (loadScenarioInputEl) {
+    loadScenarioInputEl.addEventListener('change', (event) => {
+        const file = event.target.files[0]; // Get the selected file
+        if (!file) {
+            return; // No file selected
+        }
+ 
+        const reader = new FileReader(); // Create a FileReader to read the file content
+        reader.onload = (e) => { // This function is called when the file is successfully read
+            try {
+                const scenario = JSON.parse(e.target.result); // Parse the file content as JSON
+                // Basic validation: check if the loaded object has a 'version' property
+                if (!scenario || typeof scenario.version === 'undefined') { 
+                    alert('This does not look like a valid scenario file (missing version property or invalid JSON).');
+                    return;
+                }
+                applyScenarioData(scenario); // Apply the loaded data to the UI
+                alert('Scenario has been loaded!');
+            } catch (error) {
+                console.error('Error loading or parsing scenario file:', error);
+                alert(`Could not load scenario. Error: ${error.message}`);
+            }
+            // Reset the file input's value. This allows loading the same file again if the user wishes to.
+            event.target.value = null; 
+        };
+        reader.onerror = (e) => {
+            console.error('Error reading file:', e);
+            alert('Error reading the selected file.');
+        };
+        reader.readAsText(file); // Start reading the file as plain text
     });
 }
  
@@ -1194,18 +1434,18 @@ generateButton.addEventListener('click', () => {
             const genre = genreSelect.value;
             return { name: checkbox.value, juryOdds: juryOdds, teleOdds: teleOdds, isAQ: isAQ, genre: genre };
         });
-
+ 
     if (selectedCountries.length < 10 || selectedCountries.length > 50) {
         alert('Please select between 11 and 50 countries.');
         return;
     }
-
+ 
     const autoQualifiers = selectedCountries.filter(country => country.isAQ);
     if (autoQualifiers.length > 10) {
         alert('You can select a maximum of 10 auto-qualifiers.');
         return;
     }
-
+ 
  
     const genreBonuses = calculateGenreBonus(selectedCountries);
  
@@ -1254,7 +1494,7 @@ generateButton.addEventListener('click', () => {
         dynamicVotingButton.disabled = false;
     }, 1000);
 });
-
+ 
 updateAQCheckboxStatus();
  
 semiFinal1Button.addEventListener('click', () => {
@@ -1385,10 +1625,10 @@ function createWeightedCountries(availableCountries, oddsType) {
         const odds = results[country.name] ? results[country.name][oddsType] : country[oddsType];
         return { country: country.name, weight: calculateWeight(odds) };
     });
-
+ 
     const totalWeight = weights.reduce((sum, item) => sum + item.weight, 0);
     const scaleFactor = 10000 / totalWeight;
-
+ 
     return weights.map(item => ({
         country: item.country,
         weight: Math.max(1, Math.round(item.weight * scaleFactor))
@@ -1428,13 +1668,13 @@ function selectVotingCountries(weightedCountries) {
 function generateVotingResults(countries, votingCountries = null, genreBonuses) {
     const results = {};
     const allCountries = votingCountries || countries;
-
+ 
     allCountries.forEach(country => {
         const genreBonus = genreBonuses[country.genre] || 1;
         const likeabilityFactor = (1 + genreLikeability[country.genre]) / 4;
         const adjustedJuryOdds = Math.round(country.juryOdds * genreBonus * likeabilityFactor);
         const adjustedTeleOdds = Math.round(country.teleOdds * genreBonus * likeabilityFactor);
-
+ 
         results[country.name] = { 
             juryTotal: 0, 
             teleTotal: 0, 
@@ -1449,22 +1689,22 @@ function generateVotingResults(countries, votingCountries = null, genreBonuses) 
             genre: country.genre
         };
     });
-
+ 
     const points = [12, 10, 8, 7, 6, 5, 4, 3, 2, 1];
     const votingOrder = (votingCountries || countries).map(c => c.name).sort(() => 0.5 - Math.random());
-
+ 
     votingOrder.forEach(voter => {
         const availableCountries = countries.filter(c => c.name !== voter);
         const teleWeightedCountries = createWeightedCountries(availableCountries, 'teleOdds');
         const teleVotedCountries = selectVotingCountries(teleWeightedCountries);
-
+ 
         if (results[voter]) {
             // Always calculate televoting
             teleVotedCountries.forEach((country, index) => {
                 results[voter].teleVotesGiven[country] = points[index];
                 results[country].teleTotal += points[index];
             });
-
+ 
             // Only calculate jury voting if it's the final or if using the current system in semi-finals
             if (selectedVotingSystem === 'current' || votingCountries) {
                 const juryWeightedCountries = createWeightedCountries(availableCountries, 'juryOdds');
@@ -1476,28 +1716,28 @@ function generateVotingResults(countries, votingCountries = null, genreBonuses) 
             }
         }
     });
-
+ 
     const sortedTele = Object.keys(results)
         .filter(country => results[country].isCompeting)
         .sort((a, b) => results[b].teleTotal - results[a].teleTotal);
-
+ 
     if (selectedVotingSystem === 'current' || votingCountries) {
         sortedTele.forEach((country, index) => {
             results[country].telePlacement = results[country].teleTotal > 0 ? index + 1 : `<p style="color:red;">${sortedTele.length} (0p)</p>`;
         });
-
+ 
         const sortedJury = Object.keys(results)
             .filter(country => results[country].isCompeting)
             .sort((a, b) => results[b].juryTotal - results[a].juryTotal);
-
+ 
         sortedJury.forEach((country, index) => {
             results[country].juryPlacement = results[country].juryTotal > 0 ? index + 1 : `<p style="color:red;">${sortedJury.length} (0p)</p>`;
         });
     }
-
+ 
     return { results, votingOrder };
 }
-
+ 
  
 function runContest(countries, genreBonuses) {
     if (countries.length <= 26) {
@@ -1505,26 +1745,26 @@ function runContest(countries, genreBonuses) {
     } else {
         const autoQualifiers = countries.filter(c => c.isAQ).slice(0, 10);
         const remainingCountries = countries.filter(c => !c.isAQ);
-
+ 
         const shuffledCountries = [...remainingCountries].sort(() => 0.5 - Math.random());
         const semiFinal1Countries = shuffledCountries.slice(0, Math.ceil(shuffledCountries.length / 2));
         const semiFinal2Countries = shuffledCountries.slice(Math.ceil(shuffledCountries.length / 2));
-
+ 
         const semiFinal1 = generateVotingResults(semiFinal1Countries, null, genreBonuses);
         const semiFinal2 = generateVotingResults(semiFinal2Countries, null, genreBonuses);
-
+ 
         const qualifiersPerSemi = 10;
         const semiFinal1Qualifiers = getQualifiers(semiFinal1.results, qualifiersPerSemi);
         const semiFinal2Qualifiers = getQualifiers(semiFinal2.results, qualifiersPerSemi);
-
+ 
         const finalCountries = [...autoQualifiers, ...semiFinal1Qualifiers, ...semiFinal2Qualifiers];
         const allVotingCountries = [...countries];
         const finalResults = generateVotingResults(finalCountries, allVotingCountries, genreBonuses);
-
+ 
         return { semiFinal1, semiFinal2, finalResults };
     }
 }
-
+ 
 function updateAQCheckboxStatus() {
     // Select all country checkboxes across all continents and categories
     const totalSelectedCountries = 
@@ -1537,10 +1777,10 @@ function updateAQCheckboxStatus() {
         document.querySelectorAll('#africaContestants .country-checkbox:checked').length +
         document.querySelectorAll('#asiaContestants .country-checkbox:checked').length +
         document.querySelectorAll('#oceaniaContestants .country-checkbox:checked').length;
-
+ 
     // Check if 27 or more countries have been selected
     const shouldEnableAQ = totalSelectedCountries >= 27;
-
+ 
     // Enable or disable the AQ checkboxes based on the total count
     document.querySelectorAll('.country-checkbox').forEach(checkbox => {
         const aqCheckbox = checkbox.nextElementSibling.nextElementSibling;
@@ -1551,32 +1791,32 @@ function updateAQCheckboxStatus() {
             aqCheckbox.checked = false;
         }
     });
-
+ 
     // Update the <h3> element with the selected count
     const selectedCountElement = document.getElementById('selectedCount');
     selectedCountElement.textContent = `Total Selected Countries: ${totalSelectedCountries}/50`;
-
+ 
     // Change color based on the number of selected countries
     if (totalSelectedCountries < 11 || totalSelectedCountries > 50) {
         selectedCountElement.style.color = 'red';
     } else {
         selectedCountElement.style.color = 'black'; 
     }
-
+ 
     console.log(`Total selected countries: ${totalSelectedCountries}, AQ enabled: ${shouldEnableAQ}`);
 }
-
-
+ 
+ 
 function addCheckboxListeners(checkbox) {
     checkbox.addEventListener('change', () => {
         console.log(`Checkbox for ${checkbox.value} changed. Checked: ${checkbox.checked}`);
         updateAQCheckboxStatus();
     });
 }
-
+ 
 document.querySelectorAll('.country-checkbox').forEach(addCheckboxListeners);
-
-
+ 
+ 
  
 function displayResults(results, countries, votingOrder) {
     let html = `
@@ -1598,7 +1838,7 @@ function displayResults(results, countries, votingOrder) {
             </thead>
             <tbody>
     `;
-
+ 
     const sortedCountries = countries.sort((a, b) => {
         const totalA = results[a.name].juryTotal + results[a.name].teleTotal;
         const totalB = results[b.name].juryTotal + results[b.name].teleTotal;
@@ -1606,7 +1846,7 @@ function displayResults(results, countries, votingOrder) {
         if (results[a.name].teleTotal !== results[b.name].teleTotal) return results[b.name].teleTotal - results[a.name].teleTotal;
         return tiebreaker(results[b.name], results[a.name]);
     });
-
+ 
     sortedCountries.forEach((country, index) => {
         html += `<tr>
                 <td>${index + 1}</td>
@@ -1623,12 +1863,12 @@ function displayResults(results, countries, votingOrder) {
             </tr>
         `;
     });
-
+ 
     html += `
             </tbody>
         </table>
     `;
-
+ 
     resultsDiv.innerHTML = html;
 }
  
@@ -1642,7 +1882,7 @@ function getQualifiers(results, count) {
             }
             return b[1].teleTotal - a[1].teleTotal;
         });
-
+ 
     return sortedCountries.slice(0, count).map(([name, data]) => ({ 
         name, 
         juryOdds: data.juryOdds, 
@@ -1650,7 +1890,7 @@ function getQualifiers(results, count) {
         genre: data.genre 
     }));
 }
-
+ 
  
 function displaySemiFinals(semiFinal, title) {
     chartContainer.style.display = 'block';
@@ -1672,7 +1912,7 @@ function createSemiFinalTable(semiFinal) {
             }
             return semiFinal.results[b].teleTotal - semiFinal.results[a].teleTotal;
         });
-
+ 
     let html = `
         <table class="table table-striped eurovision-table">
             <thead>
@@ -1689,7 +1929,7 @@ function createSemiFinalTable(semiFinal) {
             </thead>
             <tbody>
     `;
-
+ 
     sortedCountries.forEach((country, index) => {
         const result = semiFinal.results[country];
         const isQualified = index < 10;
@@ -1709,12 +1949,12 @@ function createSemiFinalTable(semiFinal) {
             </tr>
         `;
     });
-
+ 
     html += `
             </tbody>
         </table>
     `;
-
+ 
     return html;
 }
  
@@ -1722,7 +1962,7 @@ function createVotingChart(results, title, isTele = false) {
     if (!isTele && selectedVotingSystem === 'noJurySemi' && !title.includes('Final')) {
         return ''; // Don't create jury voting chart for semi-finals in no-jury system
     }
-
+ 
     const { results: voteResults, votingOrder } = results;
     const sortedCountries = Object.keys(voteResults)
         .filter(country => voteResults[country].isCompeting)
@@ -1925,13 +2165,13 @@ function displayFinalResults(finalResults) {
                 <td class="points">${results[country].juryTotal}</td>
                 <td class="points">${results[country].teleTotal}</td>
                 <td class="points">${results[country].juryTotal + results[country].teleTotal}</td>
-               
+ 
                 <td class="placement">${results[country].juryPlacement}</td>
                 <td class="placement">${results[country].telePlacement}</td>
             </tr>
         `;
     });
-
+ 
  
     html += `
             </tbody>
@@ -1948,31 +2188,31 @@ function tiebreaker(a, b, previousOrder) {
     if (totalA !== totalB) {
         return totalB - totalA;
     }
-
+ 
     // If total points are tied, compare televoting scores
     if (a.teleTotal !== b.teleTotal) {
         return b.teleTotal - a.teleTotal;
     }
-
+ 
     // If televoting scores are tied, compare jury scores
     if (a.juryTotal !== b.juryTotal) {
         return b.juryTotal - a.juryTotal;
     }
-
+ 
     // If jury scores are also tied, compare the number of countries that awarded points
     const aCountriesVoted = Object.values(a.teleVotesGiven).filter(v => v > 0).length;
     const bCountriesVoted = Object.values(b.teleVotesGiven).filter(v => v > 0).length;
     if (aCountriesVoted !== bCountriesVoted) {
         return bCountriesVoted - aCountriesVoted;
     }
-
+ 
     // If still tied, compare the number of 12 points received in televoting
     const aTele12 = Object.values(a.teleVotesGiven).filter(v => v === 12).length;
     const bTele12 = Object.values(b.teleVotesGiven).filter(v => v === 12).length;
     if (aTele12 !== bTele12) {
         return bTele12 - aTele12;
     }
-
+ 
     // Continue with 10 points, 8 points, etc. in televoting if needed
     const telePoints = [10, 8, 7, 6, 5, 4, 3, 2, 1];
     for (let point of telePoints) {
@@ -1980,26 +2220,26 @@ function tiebreaker(a, b, previousOrder) {
         const bCount = Object.values(b.teleVotesGiven).filter(v => v === point).length;
         if (aCount !== bCount) return bCount - aCount;
     }
-
+ 
     // If still tied, repeat the process for jury votes
     const aJury12 = Object.values(a.juryVotesGiven).filter(v => v === 12).length;
     const bJury12 = Object.values(b.juryVotesGiven).filter(v => v === 12).length;
     if (aJury12 !== bJury12) {
         return bJury12 - aJury12;
     }
-
+ 
     const juryPoints = [10, 8, 7, 6, 5, 4, 3, 2, 1];
     for (let point of juryPoints) {
         const aCount = Object.values(a.juryVotesGiven).filter(v => v === point).length;
         const bCount = Object.values(b.juryVotesGiven).filter(v => v === point).length;
         if (aCount !== bCount) return bCount - aCount;
     }
-
+ 
     // If everything is still tied, maintain the previous order
     if (previousOrder) {
         return previousOrder.indexOf(a.name) - previousOrder.indexOf(b.name);
     }
-
+ 
     // If no previous order is provided, countries remain in their current position
     return 0;
 }
@@ -2303,56 +2543,56 @@ document.getElementById('resetButton').addEventListener('click', () => {
             checkbox.disabled = true;
         }
     });
-
+ 
     // Reset odds inputs
     document.querySelectorAll('.jury-odds-input, .tele-odds-input').forEach(input => {
         input.value = 100;
     });
-
+ 
     // Reset genre selections
     document.querySelectorAll('.genre-select').forEach(select => {
         select.selectedIndex = 0;
     });
-
+ 
     // Reset genre likeability
     genres.forEach(genre => genreLikeability[genre] = 3);
     updateGenreLikeabilityUI();
-
-
+ 
+ 
     // Reset min and max odds
     document.getElementById('minOdds').value = 1;
     document.getElementById('maxOdds').value = 500;
-
+ 
     // Reset reveal time
     document.getElementById('revealTime').value = 10;
-
+ 
     // Clear results and dynamic voting area
     resultsDiv.innerHTML = '';
     dynamicVotingArea.innerHTML = '';
-
+ 
     // Hide and clear chart containers
     const chartContainers = document.querySelectorAll('.semi-final-charts, #chartContainer');
     chartContainers.forEach(container => {
         container.innerHTML = '';
         container.style.display = 'none';
     });
-
+ 
     // Remove simulation areas
     const simulationAreas = document.querySelectorAll('#simulationArea');
     simulationAreas.forEach(area => area.remove());
-
+ 
     // Remove draw simulation
     const drawSimulation = document.querySelector('.draw-simulation');
     if (drawSimulation) {
         drawSimulation.remove();
     }
-
+ 
     // Reset results variables
     semiFinal1Results = null;
     semiFinal2Results = null;
     finalResults = null;
     currentSemiFinal = 1;
-
+ 
     // Reset button states
     document.getElementById('generateButton').disabled = false;
     semiFinal1Button.disabled = true;
@@ -2361,19 +2601,19 @@ document.getElementById('resetButton').addEventListener('click', () => {
     simulateButton.disabled = true;
     dynamicVotingButton.disabled = true;
     document.getElementById('simulateSemiDrawButton').disabled = true;
-
+ 
     semiFinal1Button.classList.remove('btn-pink');
     semiFinal2Button.classList.remove('btn-pink');
-
+ 
     // Show settings card
     document.querySelector('.settings-card').style.display = 'block';
-
+ 
     // Scroll to top
     window.scrollTo(0, 0);
-
+ 
     // Update AQ checkbox status
     updateAQCheckboxStatus();
-   
+ 
     document.querySelectorAll('.odds-input').forEach(input => {
         input.value = 100;
     });
@@ -2446,47 +2686,62 @@ document.getElementById('instructionsButton').addEventListener('click', () => {
  
 document.getElementById('whatsNewButton').addEventListener('click', () => {
     const whatsNewHTML = `
-        <div class="modal fade" id="whatsNewModal" tabindex="-1" aria-labelledby="whatsNewModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="whatsNewModalLabel">What's New in Eurovision Simulator <h6 style="color:green;"> Added, </h6><h6 style="color:orange;">Remake, </h6><h6 style="color:black;">Global Bugfixes </h6></h6>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-            <h6>Version 1.1.1 Updates and Bugfixes:</h6>
-                        <ul>
-			  <li style="color:green;"><ADDED> New built-in countries from the whole world! 
-			   <li style="color:green;"><ADDED> Counter of uploaded countries into the season.
-		 	   <li style="color:orange; size:5px"><REMAKE> I had to remake odds a little bit! Unnoticeable little changes.
-			   <li>Next update is going to be much bigger.</li>
-                        </ul>
-        
-			<h6>Version 1.1.0 Updates and Bugfixes:</h6>
-                        <ul>
-			  <li style="color:green;"><ADDED> New mode which allows you to remove jury from the Semi-Finals. More systems soon!
-			   <li style="color:green;"><ADDED> Custom countries with its custom icons. Credits for this function goes to: <a href="https://www.reddit.com/user/stems_twice/">@stems_twice</a>. Thank you!
-		 	   <li style="color:orange;"><REMAKE> Separated odds for Televoting and Jury. Also the menu for odds got changed.
-			   <li style="color:orange;"><REMAKE> Simulator allows now 10 Auto-Qualifiers and are available after choosing 27 or more all countries altogether.
-			   <li>Hidden Odds in all charts and simulations</li>
-                        </ul>
-                        <h6>Version 1.0.1 Updates and Bugfixes:</h6>
-                        <ul>
-			   <li style="color:green;"><ADDED> this "What's New?" button to display recent changes and updates</li>
-                            <li style="color:green;"><ADDED> new genres: Heavy Metal, Techno, and Rap</li>
-                            <li>Genres are now displayed in a grid layout for better space utilization</li>
-			                <li>Whole menu changed it's location and is now horizontal </li>
-                            <li>Dynamic finale table now appears <u>above the charts</u></li>
-                            <li>Added "AQ" label next to golden checkboxes auto-qualifier checkboxes for clarity</li>
-                            <li>Fixed tiebreaker system for more accurate results</li>
-                        </ul>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    </div>
+<div class="modal fade" id="whatsNewModal" tabindex="-1" aria-labelledby="whatsNewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="whatsNewModalLabel">Eurovision Simulator - The Project Returns!</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info" role="alert">
+                    <strong>A Big Thank You & Exciting News!</strong><br>
+                    This simulator was originally created by <strong>u/Successful_Sky7328</strong>. After a period of inactivity (around 8 months), and with their kind permission, I've taken on the task of updating and hopefully expanding this wonderful tool for the Eurovision community!
+ 
                 </div>
+ 
+                <h6>Version 1.2.0 (Community Revival Update) <span class="badge bg-success">NEW LIFE!</span></h6>
+                <p>Hello everyone! As the new custodian of this project, I'm excited to bring you the first set of updates:</p>
+                <ul>
+                    <li style="color:green;"><strong><FEATURE UPGRADE> Custom Filenames for Saved Scenarios:</strong> To help you better organize your simulations, you can now specify a custom filename when saving your scenarios.</li>
+                    <li style="color:green;"><strong><NEW FEATURE> Scenario Saving & Loading:</strong> This was a much-anticipated capability! You can now save your entire simulation setup – including selected countries, their odds, genres, any custom contestants you've added, global settings like genre likeability, and the voting system – to a local file. Load it back anytime to continue your work or re-run a favorite setup.</li>
+                    <li>Initial code refactoring for easier future development and stability for these new features.</li>
+                </ul>
+                <p>This is just the beginning! I'm keen to hear your feedback and ideas for future enhancements. Let's make this simulator even better together!</p>
+                <hr> 
+                <p><em>For context, here's a look back at the great work done by u/Successful_Sky7328:</em></p>
+                <h6>Version 1.1.1 (by u/Successful_Sky7328)</h6>
+                <ul>
+                    <li>New built-in countries from around the world.</li>
+                    <li>Counter for countries participating in the season.</li>
+                    <li>Minor adjustments to odds calculations.</li>
+                    <li><i>... (and other changes from v.1.1.1 as listed in your original file) ...</i></li>
+                </ul>
+                 <h6>Version 1.1.0 (by u/Successful_Sky7328)</h6>
+                <ul>
+                    <li>Mode to remove jury from Semi-Finals.</li>
+                    <li>Custom countries with custom icons (original credits to u/stems_twice).</li>
+                    <li>Separated odds for Televoting and Jury; updated odds menu.</li>
+                    <li>Increased Auto-Qualifiers limit to 10 (available with 27+ countries).</li>
+                    <li>Odds hidden in charts and simulations.</li>
+                </ul>
+                 <h6>Version 1.0.1 (by u/Successful_Sky7328)</h6>
+                <ul>
+                    <li>"What's New?" button added.</li>
+                    <li>New genres: Heavy Metal, Techno, and Rap.</li>
+                    <li>Genres displayed in a grid layout.</li>
+                    <li>Menu layout changed to horizontal.</li>
+                    <li>Dynamic finale table moved above charts.</li>
+                    <li>"AQ" label added for auto-qualifier checkboxes.</li>
+                    <li>Tiebreaker system fixed for more accurate results.</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
+    </div>
+</div>
     `;
  
     document.body.insertAdjacentHTML('beforeend', whatsNewHTML);
@@ -2500,3 +2755,4 @@ document.addEventListener('DOMContentLoaded', updateAQCheckboxStatus);
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+ 
