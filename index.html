@@ -339,6 +339,16 @@
 	.odds-column {
             display: none;
         }
+        .rank-box {
+    background-color: orange;
+    color: white;
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-weight: bold;
+    display: inline-block;
+    min-width: 30px;
+    text-align: center;
+}
     </style>
 </head>
 <body>
@@ -358,6 +368,7 @@
                     <button id="simulateSemiDrawButton" class="btn btn-primary mb-2" disabled>SIMULATE SEMI-FINALE DRAW</button>
                     <button id="simulateButton" class="btn btn-secondary mb-2" disabled>SIMULATE SEMI-FINALE</button>
                     <button id="dynamicVotingButton" class="btn btn-success mb-2" disabled>DYNAMIC FINALE VOTING</button>
+                    <button id="dynamicESCVotingButton" class="btn btn-success mb-2" disabled>DYNAMIC ESC VOTING</button>
                     <button id="resetButton" class="btn btn-danger mb-2">RESET CURRENT SIMULATION</button> 
                     <button id="saveScenarioButton" class="btn btn-success mb-2">SAVE SCENARIO</button>
                         <button id="loadScenarioButton" class="btn btn-info mb-2">LOAD SCENARIO</button>
@@ -373,7 +384,7 @@
     <div class="col-md-12">
         <div class="card settings-card">
             <div class="card-body">
-                <h5>V.1.2.0</h5>
+                <h5>V.1.2.1</h5>
                 <h2>Select Participating Countries and Set Odds<br> (11-50 countries semi-finals starting with 27, odds -> lower is better):</h2>
                 <h3 id="selectedCount" style="color: black;">Total Selected Countries: 0/50</h3>
                 <div class="row">
@@ -881,6 +892,7 @@ const selectAllAsiaButton = document.getElementById('selectAllAsia');
 const unselectAllAsiaButton = document.getElementById('unselectAllAsia');
 const selectAllOceaniaButton = document.getElementById('selectAllOceania');
 const unselectAllOceaniaButton = document.getElementById('unselectAllOceania');
+const dynamicESCVotingButton = document.getElementById('dynamicESCVotingButton');
  
 let semiFinal1Results, semiFinal2Results, finalResults;
 let currentSemiFinal = 1;
@@ -997,7 +1009,459 @@ function validateOddsDifference(event) {
         event.target.value = event.target === juryInput ? teleOdds : juryOdds;
     }
 }
- 
+
+function simulateDynamicESCVoting(finalResults) {
+    const { results, votingOrder } = finalResults;
+    const competingCountries = Object.keys(results).filter(country => results[country].isCompeting);
+
+    dynamicVotingArea.innerHTML = '';
+    const totalCountries = competingCountries.length;
+    const midPoint = Math.ceil(totalCountries / 2);
+    const topHalf = competingCountries.slice(0, midPoint);
+    const bottomHalf = competingCountries.slice(midPoint);
+
+    let html = `
+        <h2>Dynamic ESC Voting Simulation</h2>
+        <div id="votingHeader" style="font-size: 1.5em; font-weight: bold; margin-bottom: 10px; text-align: center;"></div>
+        <div class="row" id="tableContainer">
+            <div class="col-md-6 table-column" id="leftTable">
+                <div class="table-responsive">
+                    <table class="table table-striped eurovision-table" id="topHalfTable">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Receiving Country</th>
+                                <th>Genre</th>
+                                <th class="current-jury-header">Current Jury</th>
+                                <th>Jury Points</th>
+                                <th>Televoting</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${topHalf.map(country => `
+                                <tr data-country="${country}">
+                                    <td class="rank"></td>
+                                    <td class="receiving-country">
+                                        ${country}
+                                        <span class="flag-icon flag-icon-${getCountryCode(country)}"></span>
+                                    </td>
+                                    <td class="genre">${results[country].genre}</td>
+                                    <td class="current-jury"></td>
+                                    <td class="jury-points">0</td>
+                                    <td class="tele-points">0</td>
+                                    <td class="total-column">0</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="col-md-6 table-column" id="rightTable">
+                <div class="table-responsive">
+                    <table class="table table-striped eurovision-table" id="bottomHalfTable">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Receiving Country</th>
+                                <th>Genre</th>
+                                <th class="current-jury-header">Current Jury</th>
+                                <th>Jury Points</th>
+                                <th>Televoting</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${bottomHalf.map(country => `
+                                <tr data-country="${country}">
+                                    <td class="rank"></td>
+                                    <td class="receiving-country">
+                                        ${country}
+                                        <span class="flag-icon flag-icon-${getCountryCode(country)}"></span>
+                                    </td>
+                                    <td class="genre">${results[country].genre}</td>
+                                    <td class="current-jury"></td>
+                                    <td class="jury-points">0</td>
+                                    <td class="tele-points">0</td>
+                                    <td class="total-column">0</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <button id="nextVoteButton" class="btn btn-primary mt-3 reveal-button">Next Vote</button>
+    `;
+
+    dynamicVotingArea.innerHTML = html;
+
+    let currentVotingIndex = 0;
+    let isTelevotingRevealed = false;
+    let isTelevotingStarted = false;
+    let currentTeleVoteIndex = 0;
+    let previousVotingCountry = null;
+    const votedCountries = new Set(); // Track countries that have completed jury voting
+
+    // Sort countries by jury points for televoting reveal (lowest to highest)
+    const sortedByJuryPoints = [...competingCountries].sort((a, b) => {
+        const aJuryPoints = results[a].juryTotal || 0;
+        const bJuryPoints = results[b].juryTotal || 0;
+        return aJuryPoints - bJuryPoints;
+    });
+
+    // CSS for styling, row animations, voting country highlight, and jury-voted background
+    const style = document.createElement('style');
+    style.innerHTML = `
+        .eurovision-table tr {
+            transition: transform 0.5s ease-in-out;
+            position: relative;
+        }
+        .moving-up::after, .moving-down::after {
+            content: '';
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+        }
+        .moving-up::after {
+            border-bottom: 5px solid green;
+        }
+        .moving-down::after {
+            border-top: 5px solid red;
+        }
+        .current-jury-header {
+            width: 80px; /* Smaller width for Current Jury column header */
+        }
+        .eurovision-table td.current-jury {
+            width: 80px; /* Smaller width for Current Jury column cells */
+            text-align: center;
+        }
+        .eurovision-table td.current-jury.jury-points-8 {
+            background-color: #cd7f32 !important; /* Bronze */
+            color: black;
+            font-weight: bold;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        .eurovision-table td.current-jury.jury-points-10 {
+            background-color: silver !important;
+            color: black;
+            font-weight: bold;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        .eurovision-table td.current-jury.jury-points-12 {
+            background-color: gold !important;
+            color: black;
+            font-weight: bold;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        .eurovision-table tr.televoted {
+            background-color: #d5bdaf !important; /* Light brown background for televoting */
+        }
+        .eurovision-table td.current-jury.voting-country {
+            background-color: black !important; /* Black background for the voting country */
+            color: white; /* Ensure text is readable */
+        }
+        .eurovision-table tr.jury-voted {
+            background-color: #d6ccc2 !important; /* Background for countries that have completed jury voting */
+        }
+    `;
+    document.head.appendChild(style);
+
+    function updateTable(callback = null) {
+        const topTableBody = document.querySelector('#topHalfTable tbody');
+        const bottomTableBody = document.querySelector('#bottomHalfTable tbody');
+        if (!topTableBody || !bottomTableBody) {
+            console.error('One or both table bodies not found');
+            return;
+        }
+
+        const topRows = Array.from(topTableBody.querySelectorAll('tr'));
+        const bottomRows = Array.from(bottomTableBody.querySelectorAll('tr'));
+        const allRows = [...topRows, ...bottomRows];
+
+        // Store current positions within each table
+        const topPositions = new Map(topRows.map((row, index) => [row.dataset.country, index]));
+        const bottomPositions = new Map(bottomRows.map((row, index) => [row.dataset.country, index]));
+
+        // Sort all rows based on total points
+        allRows.sort((a, b) => {
+            const aTotal = parseInt(a.querySelector('.total-column').textContent) || 0;
+            const bTotal = parseInt(b.querySelector('.total-column').textContent) || 0;
+            if (aTotal !== bTotal) {
+                return bTotal - aTotal;
+            }
+            const aCountry = a.dataset.country || '';
+            const bCountry = b.dataset.country || '';
+            return aCountry.localeCompare(bCountry);
+        });
+
+        // Assign new ranks based on sorted order
+        allRows.forEach((row, newIndex) => {
+            const rankCell = row.querySelector('.rank');
+            rankCell.textContent = newIndex + 1;
+        });
+
+        // Reassign rows to their respective tables (top or bottom half)
+        const newTopRows = allRows.slice(0, midPoint);
+        const newBottomRows = allRows.slice(midPoint);
+
+        // Animate within each table
+        const animateRows = (rows, tableBody, positions) => {
+            rows.forEach((row, newIndex) => {
+                const country = row.dataset.country;
+                const oldIndex = positions.get(country);
+                if (oldIndex !== undefined && newIndex !== oldIndex) {
+                    const direction = newIndex > oldIndex ? 'moving-down' : 'moving-up';
+                    row.classList.add(direction);
+                    setTimeout(() => row.classList.remove(direction), 1000);
+
+                    const distance = (newIndex - oldIndex) * row.offsetHeight;
+                    row.style.transform = `translateY(${distance}px)`;
+                }
+            });
+
+            setTimeout(() => {
+                rows.forEach(row => {
+                    row.style.transform = 'none';
+                    tableBody.appendChild(row);
+                });
+            }, 500);
+        };
+
+        animateRows(newTopRows, topTableBody, topPositions);
+        animateRows(newBottomRows, bottomTableBody, bottomPositions);
+
+        setTimeout(() => {
+            if (callback) callback();
+        }, 500);
+    }
+
+    function revealNextVote() {
+        const votingHeader = document.getElementById('votingHeader');
+        if (currentVotingIndex < votingOrder.length && !isTelevotingRevealed) {
+            const votingCountry = votingOrder[currentVotingIndex];
+            votingHeader.innerHTML = `
+                Voting Now: <span class="flag-icon flag-icon-${getCountryCode(votingCountry)}"></span> ${votingCountry} (${currentVotingIndex + 1}/${votingOrder.length})
+            `;
+
+            // Reset Current Jury column for all rows before applying new votes
+            competingCountries.forEach(country => {
+                const row = document.querySelector(`.eurovision-table tr[data-country="${country}"]`);
+                if (row) {
+                    const currentJuryCell = row.querySelector('.current-jury');
+                    currentJuryCell.textContent = '';
+                    currentJuryCell.className = 'current-jury'; // Reset classes
+                }
+            });
+
+            // Highlight the voting country's Current Jury cell with black background
+            const votingCountryRow = document.querySelector(`.eurovision-table tr[data-country="${votingCountry}"]`);
+            if (votingCountryRow) {
+                const currentJuryCell = votingCountryRow.querySelector('.current-jury');
+                currentJuryCell.classList.add('voting-country');
+            }
+
+            const juryVotes = results[votingCountry].juryVotesGiven;
+            const sortedVotes = Object.entries(juryVotes).sort((a, b) => a[1] - b[1]);
+
+            sortedVotes.forEach(([receiver, points]) => {
+                const receiverRow = document.querySelector(`.eurovision-table tr[data-country="${receiver}"]`);
+                if (receiverRow) {
+                    const juryPointsCell = receiverRow.querySelector('.jury-points');
+                    const currentJuryCell = receiverRow.querySelector('.current-jury');
+                    const totalPointsCell = receiverRow.querySelector('.total-column');
+                    const currentJuryPoints = parseInt(juryPointsCell.textContent) || 0;
+                    const newJuryPoints = currentJuryPoints + points;
+                    juryPointsCell.textContent = newJuryPoints;
+                    totalPointsCell.textContent = newJuryPoints;
+
+                    // Update Current Jury column with colored backgrounds
+                    let className = 'current-jury';
+                    if (points === 8) className += ' jury-points-8';
+                    else if (points === 10) className += ' jury-points-10';
+                    else if (points === 12) className += ' jury-points-12';
+                    currentJuryCell.className = className;
+                    currentJuryCell.textContent = points;
+                }
+            });
+
+            updateTable(() => {
+                // Add the current voting country to the voted set
+                votedCountries.add(votingCountry);
+
+                // Update background color for all countries that have voted
+                votedCountries.forEach(country => {
+                    const row = document.querySelector(`.eurovision-table tr[data-country="${country}"]`);
+                    if (row) {
+                        row.classList.add('jury-voted');
+                    }
+                });
+
+                currentVotingIndex++;
+                if (currentVotingIndex >= votingOrder.length) {
+                    isTelevotingRevealed = true;
+                }
+            });
+        } else if (isTelevotingRevealed && !isTelevotingStarted) {
+            // Show break before starting televoting, no table swap
+            votingHeader.innerHTML = `Preparing Televoting Results... (0/${sortedByJuryPoints.length})`;
+            isTelevotingStarted = true;
+            // No table update needed here, just wait for the next click
+        } else if (isTelevotingStarted && currentTeleVoteIndex < sortedByJuryPoints.length) {
+            revealNextTelevote();
+        }
+    }
+
+    function revealTelevoting() {
+        // Function remains for clarity, but clearing is handled in revealNextTelevote on first call
+    }
+
+    function revealNextTelevote() {
+        if (currentTeleVoteIndex === 0) {
+            // Clear Current Jury column and reset row backgrounds after all jury voting
+            competingCountries.forEach(country => {
+                const row = document.querySelector(`.eurovision-table tr[data-country="${country}"]`);
+                if (row) {
+                    const currentJuryCell = row.querySelector('.current-jury');
+                    currentJuryCell.textContent = '';
+                    currentJuryCell.className = 'current-jury';
+                    // Reset the jury-voted background color
+                    row.classList.remove('jury-voted');
+                }
+            });
+        }
+
+        if (currentTeleVoteIndex < sortedByJuryPoints.length) {
+            const country = sortedByJuryPoints[currentTeleVoteIndex];
+            const votingHeader = document.getElementById('votingHeader');
+            votingHeader.innerHTML = `
+                Televoting Reveal: <span class="flag-icon flag-icon-${getCountryCode(country)}"></span> ${country} (${currentTeleVoteIndex + 1}/${sortedByJuryPoints.length})
+            `;
+
+            const row = document.querySelector(`.eurovision-table tr[data-country="${country}"]`);
+            if (row) {
+                const telePointsCell = row.querySelector('.tele-points');
+                const totalPointsCell = row.querySelector('.total-column');
+                const juryPointsCell = row.querySelector('.jury-points');
+                const telePoints = results[country].teleTotal;
+
+                telePointsCell.textContent = telePoints;
+                const totalPoints = (parseInt(juryPointsCell.textContent) || 0) + telePoints;
+                totalPointsCell.textContent = totalPoints;
+
+                // Highlight the row to indicate televoting points have been added
+                row.classList.add('televoted');
+
+                updateTable(() => {
+                    currentTeleVoteIndex++;
+                    if (currentTeleVoteIndex >= sortedByJuryPoints.length) {
+                        document.getElementById('nextVoteButton').style.display = 'none';
+                        votingHeader.innerHTML = 'Voting Complete';
+                    }
+                });
+            } else {
+                currentTeleVoteIndex++;
+                revealNextTelevote();
+            }
+        }
+    }
+
+    document.getElementById('nextVoteButton').addEventListener('click', revealNextVote);
+}
+
+document.getElementById('dynamicESCVotingButton').addEventListener('click', () => {
+    if (finalResults) {
+        simulateDynamicESCVoting(finalResults);
+    } else {
+        alert('Please generate the contest results first.');
+    }
+});
+
+function createSummaryTable(sortedCountries, results) {
+    const totalCountries = sortedCountries.length;
+    const midPoint = Math.ceil(totalCountries / 2);
+    const topHalf = sortedCountries.slice(0, midPoint);
+    const bottomHalf = sortedCountries.slice(midPoint);
+
+    let html = `
+        <h2 class="results-headline">Final Summary</h2>
+        <div class="row">
+            <div class="col-md-6">
+                <table class="table table-striped eurovision-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Country</th>
+                            <th>Total Points</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+    `;
+
+    topHalf.forEach((country, index) => {
+        const totalPoints = results[country].juryTotal + results[country].teleTotal;
+        const rank = String(index + 1).padStart(2, '0');
+        html += `
+            <tr>
+                <td><span class="rank-box">${rank}</span></td>
+                <td>
+                    <span class="flag-icon flag-icon-${getCountryCode(country)}"></span>
+                    ${country}
+                </td>
+                <td>${totalPoints}</td>
+            </tr>
+        `;
+    });
+
+    html += `
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <table class="table table-striped eurovision-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Country</th>
+                            <th>Total Points</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+    `;
+
+    bottomHalf.forEach((country, index) => {
+        const totalPoints = results[country].juryTotal + results[country].teleTotal;
+        const rank = String(midPoint + index + 1).padStart(2, '0');
+        html += `
+            <tr>
+                <td><span class="rank-box">${rank}</span></td>
+                <td>
+                    <span class="flag-icon flag-icon-${getCountryCode(country)}"></span>
+                    ${country}
+                </td>
+                <td>${totalPoints}</td>
+            </tr>
+        `;
+    });
+
+    html += `
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+
+    return html;
+}
+
 const buttonToTableMap = {
     selectAllRestOfEurope: 'restEuropeContestants',
     unselectAllRestOfEurope: 'restEuropeContestants',
@@ -1491,6 +1955,7 @@ generateButton.addEventListener('click', () => {
             semiFinal2Button.classList.remove('btn-pink');
         }
         finaleButton.disabled = false;
+        dynamicESCVotingButton.disabled = false;
         dynamicVotingButton.disabled = false;
     }, 1000);
 });
@@ -1573,6 +2038,7 @@ simulateButton.addEventListener('click', () => {
             } else {
                 document.getElementById('finaleButton').disabled = false;
                 document.getElementById('dynamicVotingButton').disabled = false;
+                
             }
             simulateButton.disabled = false;
         }
@@ -2174,11 +2640,14 @@ function displayFinalResults(finalResults) {
  
  
     html += `
-            </tbody>
-        </table>
-    `;
+        </tbody>
+    </table>
+`;
+
+html += createSummaryTable(sortedCountries, results);
+
+resultsDiv.innerHTML = html;
  
-    resultsDiv.innerHTML = html;
 }
  
 function tiebreaker(a, b, previousOrder) {
@@ -2600,6 +3069,7 @@ document.getElementById('resetButton').addEventListener('click', () => {
     finaleButton.disabled = true;
     simulateButton.disabled = true;
     dynamicVotingButton.disabled = true;
+    dynamicESCVotingButton.disabled = true;
     document.getElementById('simulateSemiDrawButton').disabled = true;
  
     semiFinal1Button.classList.remove('btn-pink');
@@ -2633,6 +3103,7 @@ document.getElementById('resetButton').addEventListener('click', () => {
     finaleButton.disabled = true;
     simulateButton.disabled = true;
     dynamicVotingButton.disabled = true;
+    dynamicESCVotingButton.disabled = true;
     document.getElementById('simulateSemiDrawButton').disabled = true;
  
     semiFinal1Button.classList.remove('btn-pink');
@@ -2694,13 +3165,17 @@ document.getElementById('whatsNewButton').addEventListener('click', () => {
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
+                
                 <div class="alert alert-info" role="alert">
                     <strong>A Big Thank You & Exciting News!</strong><br>
                     This simulator was originally created by <strong>u/Successful_Sky7328</strong>. After a period of inactivity (around 8 months), and with their kind permission, I've taken on the task of updating and hopefully expanding this wonderful tool for the Eurovision community!
  
                 </div>
- 
-                <h6>Version 1.2.0 (by u/alexsemilos) <span class="badge bg-success">NEW LIFE!</span></h6>
+                <h6>Version 1.2.1 (by u/Successful_Sky7328)</h6>
+                <ul>
+                    <li style="color:green;">New mode with ESC Scoreboard split table and revealing only 1 jury/tele at time in chart.</li>
+                </ul>
+                <h6>Version 1.2.0 (by u/alexsemilos) <span class="badge bg-success">NEW COOWNER!</span></h6>
                 <p>Hello everyone! As the new comaker of this project, I'm excited to bring you the first set of updates:</p>
                 <ul>
                     <li style="color:green;"><strong><FEATURE UPGRADE> Custom Filenames for Saved Scenarios:</strong> To help you better organize your simulations, you can now specify a custom filename when saving your scenarios.</li>
