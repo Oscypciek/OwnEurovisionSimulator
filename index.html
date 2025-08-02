@@ -6,26 +6,7 @@
     <title>Eurovision Song Contest Simulator with Semi-Finals and Dynamic Voting</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css">
-    <!-- =====================================================
-  SECTION: STYLE RESET & GLOBAL VARIABLES
-===================================================== -->
-<style>
-:root {
-  --bg: #f8f9fa;
-  --text: #212529;
-  --card: #ffffff;
-}
-
-[data-theme="dark"] {
-  --bg: #101418;
-  --text: #e9ecef;
-  --card: #1a1e23;
-}
-
-/* Elements using variables */
-body { background: var(--bg); color: var(--text); }
-.card, .modal-content { background: var(--card); }
-
+    <style>
         .eurovision-simulator {
             background: linear-gradient(135deg, #1e5799 0%,#2989d8 50%,#207cca 51%,#7db9e8 100%);
             min-height: 100vh;
@@ -368,27 +349,9 @@ body { background: var(--bg); color: var(--text); }
     min-width: 30px;
     text-align: center;
 }
-    
-/* Dark mode card & text fixes */
-.menu-card, .settings-card {
-    background: var(--card) !important;
-    color: var(--text) !important;
-}
-.menu-card h2, .settings-card h2 {
-    color: var(--text) !important;
-}
-/* Ensure buttons visible in dark mode */
-.btn, .btn:hover, .btn:focus {
-    color: var(--text);
-}
-</style>
+    </style>
 </head>
 <body>
-<!-- =====================================================
-  SECTION: MAIN HTML LAYOUT
-===================================================== -->
-<button id="themeToggle" class="btn btn-sm btn-outline-secondary" style="position:fixed;top:1rem;right:1rem;z-index:2000">🌙 Dark Mode</button>
-
 <div class="eurovision-simulator container-fluid">
     <h1 class="text-center mb-4">YOUR VERY OWN EUROVISION SIMULATOR</h1>
     <div class="row mb-4">
@@ -704,57 +667,6 @@ body { background: var(--bg); color: var(--text); }
     <div id="results" class="mt-4"></div>
 </div>
  
-<!-- =====================================================
-  SECTION: UTILITY FUNCTIONS (JS)
-===================================================== -->
-<script>
-  // Helper query selectors
-  const $ = (sel) => document.querySelector(sel);
-  const $$ = (sel) => Array.from(document.querySelectorAll(sel));
-
-  // Simple debounce
-  function debounce(fn, delay = 250) {
-    let timeout;
-    return (...args) => {
-      clearTimeout(timeout);
-      timeout = setTimeout(() => fn.apply(null, args), delay);
-    };
-  }
-
-
-/* ---------------- THEME TOGGLE ---------------- */
-function applyTheme(theme) {
-  document.documentElement.setAttribute('data-theme', theme);
-  const btn = document.getElementById('themeToggle');
-  if (btn) {
-    btn.textContent = theme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
-  }
-}
-
-function initTheme() {
-  const saved = localStorage.getItem('theme') || 'light';
-  applyTheme(saved);
-  const btn = document.getElementById('themeToggle');
-  if (btn) {
-    btn.addEventListener('click', () => {
-      const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
-      const next = current === 'dark' ? 'light' : 'dark';
-      localStorage.setItem('theme', next);
-      applyTheme(next);
-    });
-  }
-}
-
-// initialize theme after DOMContentLoaded
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initTheme);
-} else {
-  initTheme();
-}
-</script>
-<!-- =====================================================
-  SECTION: MAIN LOGIC (JS)
-===================================================== -->
 <script>
 const chartContainer = document.createElement('div');
 chartContainer.id = 'chartContainer';
@@ -3259,11 +3171,7 @@ document.getElementById('whatsNewButton').addEventListener('click', () => {
                     This simulator was originally created by <strong>u/Successful_Sky7328</strong>. After a period of inactivity (around 8 months), and with their kind permission, I've taken on the task of updating and hopefully expanding this wonderful tool for the Eurovision community!
  
                 </div>
-                <h6>Version 1.2.2 (by u/alexsemilos)</h6>
-                <ul>
-                    <li style="color:green;">Added Dark Mode toggle that remembers your preference.</li>
-                </ul>
-<h6>Version 1.2.1 (by u/Successful_Sky7328)</h6>
+                <h6>Version 1.2.1 (by u/Successful_Sky7328)</h6>
                 <ul>
                     <li style="color:green;">New mode with ESC Scoreboard split table and revealing only 1 jury/tele at time in chart.</li>
                 </ul>
