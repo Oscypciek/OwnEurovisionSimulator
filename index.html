@@ -539,12 +539,27 @@ body {
     width: 100px;
 }
 
+.scenography-select {
+    width: 100px;
+}
+
 .genre-likeability {
     width: 50px;
     margin-left: 5px;
 }
 
 #genreLikeability {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+    gap: 6px;
+}
+
+.scenography-likeability {
+    width: 50px;
+    margin-left: 5px;
+}
+
+#scenographyLikeability {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
     gap: 6px;
@@ -677,9 +692,56 @@ body.dark-mode .modal-body{
     color: #000000
 }
 
+body.dark-mode #welcomeModal .modal-content {
+    background-color: #2d3748;
+}
+
+body.dark-mode #welcomeModal .modal-body {
+    color: #e2e8f0;
+}
+
+body.dark-mode #welcomeModal .modal-body h4 {
+    color: #63b3ed !important;
+}
+
+body.dark-mode #welcomeModal .modal-body p {
+    color: #cbd5e0 !important;
+}
+
     </style>
 </head>
 <body>
+<!-- Welcome Modal -->
+<div class="modal fade" id="welcomeModal" tabindex="-1" aria-labelledby="welcomeModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #1e5799 0%,#2989d8 50%,#207cca 51%,#7db9e8 100%); color: white;">
+                <h5 class="modal-title" id="welcomeModalLabel">🎵 Welcome to Eurovision Simulator! 🎵</h5>
+            </div>
+            <div class="modal-body text-center">
+                <h4 style="color: #2989d8; margin-bottom: 20px;">Join Our Community!</h4>
+                <p style="font-size: 16px; margin-bottom: 20px;">
+                    Welcome to the ultimate Eurovision Song Contest simulator! 🌟<br>
+                    Create your own contests, predict results, and have fun!
+                </p>
+                <p style="font-size: 16px; margin-bottom: 25px;">
+                    <strong>Join our Reddit community</strong> to share your simulations,<br>
+                    discuss strategies, and connect with other Eurovision fans!
+                </p>
+                <a href="https://www.reddit.com/r/YourOwnESC/" target="_blank" class="btn btn-primary btn-lg" style="background-color: #FF4500; border-color: #FF4500; margin-bottom: 15px;">
+                    <strong>📱 Visit r/YourOwnESC</strong>
+                </a>
+                <p style="font-size: 14px; color: #666; margin-top: 20px;">
+                    This message will only appear once. Enjoy the simulator!
+                </p>
+            </div>
+            <div class="modal-footer" style="justify-content: center;">
+                <button type="button" class="btn btn-success btn-lg" data-bs-dismiss="modal">Let's Start! 🎉</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="eurovision-simulator container-fluid">
     <h1 class="text-center mb-4">YOUR VERY OWN EUROVISION SIMULATOR</h1>
     <div class="row mb-4">
@@ -713,7 +775,7 @@ body.dark-mode .modal-body{
     <div class="col-md-12">
         <div class="card settings-card">
             <div class="card-body">
-                <h5>V.1.2.2</h5>
+                <h5>V.1.2.3</h5>
                 <h2>Select Participating Countries and Set Odds<br> (11-50 countries semi-finals starting with 27, odds -> lower is better):</h2>
                 <h3 id="selectedCount" style="color: black;">Total Selected Countries: 0/50</h3>
                 <div class="row">
@@ -974,7 +1036,9 @@ body.dark-mode .modal-body{
     </div>
 </div>
                     <button id="randomizeGenresButton" class="btn btn-secondary w-100 mt-2">Randomize Genres</button>
+                    <button id="randomizeScenographiesButton" class="btn btn-secondary w-100 mt-2">Randomize Scenographies</button>
                     <button id="randomizeGenreLikeabilityButton" class="btn btn-secondary w-100 mt-2">Randomize Genre Likeability</button>
+                    <button id="randomizeScenographyLikeabilityButton" class="btn btn-secondary w-100 mt-2">Randomize Scenography Likeability</button>
  
                     <div class="mt-4">
                         <label for="revealTime" class="form-label">Time before revealing qualifier (seconds):</label>
@@ -989,6 +1053,12 @@ body.dark-mode .modal-body{
                         <small class="text-muted">Higher likeability (5) improves a country's odds, while lower likeability (1) worsens them.</small>
                         <h3 class="mt-4">Genre Likeability</h3>
                         <div id="genreLikeability"></div>
+                    </div>
+                    <div class="mt-4">
+                        <p class="mt-2">Scenography Likeability: 1 (Least Liked) to 5 (Most Liked)</p>
+                        <small class="text-muted">Higher likeability (5) improves a country's odds, while lower likeability (1) worsens them.</small>
+                        <h3 class="mt-4">Scenography Likeability</h3>
+                        <div id="scenographyLikeability"></div>
                     </div>
 		<div class="mt-4">
   			 <label for="votingSystem" class="form-label">Voting System:</label>
@@ -1026,6 +1096,19 @@ if (localStorage.getItem('darkMode') === 'enabled') {
     document.body.classList.add('dark-mode');
 }
 updateToggleButton();
+
+// Welcome Modal - show only on first visit
+if (!localStorage.getItem('welcomeModalShown')) {
+    // Wait for Bootstrap to be fully loaded
+    window.addEventListener('load', () => {
+        const welcomeModal = new bootstrap.Modal(document.getElementById('welcomeModal'));
+        welcomeModal.show();
+        // Mark as shown when user closes the modal
+        document.getElementById('welcomeModal').addEventListener('hidden.bs.modal', () => {
+            localStorage.setItem('welcomeModalShown', 'true');
+        });
+    });
+}
 
 const chartContainer = document.createElement('div');
 chartContainer.id = 'chartContainer';
@@ -1110,6 +1193,10 @@ const contestantLists = {
 const genres = ["Pop", "Disco", "Dark Pop", "Pop Ballad", "Power Ballad", "Folk", "Country", "Jazz", "Rock", "Punk", "Heavy Metal", "Techno", "Rap"];
 let genreLikeability = {};
 genres.forEach(genre => genreLikeability[genre] = 3);
+
+const scenographies = ["Minimal", "LED Screens", "Props", "Dancers", "Pyrotechnics", "Stage Levels", "Projections", "Interactive", "Classical", "Abstract"];
+let scenographyLikeability = {};
+scenographies.forEach(scenography => scenographyLikeability[scenography] = 3);
  
 function randomizeGenreLikeability() {
     genres.forEach(genre => {
@@ -1121,6 +1208,19 @@ function randomizeGenreLikeability() {
 function updateGenreLikeabilityUI() {
     document.querySelectorAll('.genre-likeability').forEach(input => {
         input.value = genreLikeability[input.dataset.genre];
+    });
+}
+
+function randomizeScenographyLikeability() {
+    scenographies.forEach(scenography => {
+        scenographyLikeability[scenography] = Math.floor(Math.random() * 5) + 1;
+    });
+    updateScenographyLikeabilityUI();
+}
+
+function updateScenographyLikeabilityUI() {
+    document.querySelectorAll('.scenography-likeability').forEach(input => {
+        input.value = scenographyLikeability[input.dataset.scenography];
     });
 }
  
@@ -1215,6 +1315,9 @@ function createCountryTable(containerId, countries) {
                     </div>
                     <select class="genre-select">
                         ${genres.map(genre => `<option value="${genre}">${genre}</option>`).join('')}
+                    </select>
+                    <select class="scenography-select">
+                        ${scenographies.map(scenography => `<option value="${scenography}">${scenography}</option>`).join('')}
                     </select>
                 </td>
             `;
@@ -1366,6 +1469,13 @@ document.getElementById('votingSystem').addEventListener('change', (e) => {
 function randomizeGenres() {
     document.querySelectorAll('.genre-select').forEach(select => {
         const randomIndex = Math.floor(Math.random() * genres.length);
+        select.selectedIndex = randomIndex;
+    });
+}
+
+function randomizeScenographies() {
+    document.querySelectorAll('.scenography-select').forEach(select => {
+        const randomIndex = Math.floor(Math.random() * scenographies.length);
         select.selectedIndex = randomIndex;
     });
 }
@@ -2137,17 +2247,19 @@ function collectScenarioData() {
         const containerDiv = tdElement.querySelector('.checkbox-container'); 
         const oddsInputsDiv = tdElement.querySelector('.odds-inputs'); 
         const genreSelect = tdElement.querySelector('.genre-select'); 
- 
-        if (containerDiv && oddsInputsDiv && genreSelect) {
+        const scenographySelect = tdElement.querySelector('.scenography-select');
+
+        if (containerDiv && oddsInputsDiv && genreSelect && scenographySelect) {
             const juryOddsInput = oddsInputsDiv.querySelector('.jury-odds-input'); 
             const teleOddsInput = oddsInputsDiv.querySelector('.tele-odds-input'); 
             const aqCheckbox = containerDiv.querySelector('.aq-checkbox'); 
- 
+
             scenario.selectedCountriesData.push({
                 name: checkbox.value,
                 juryOdds: parseInt(juryOddsInput.value),
                 teleOdds: parseInt(teleOddsInput.value),
                 genre: genreSelect.value,
+                scenography: scenographySelect.value,
                 isAQ: aqCheckbox.checked
             });
         } else {
@@ -2164,6 +2276,16 @@ function collectScenarioData() {
              scenario.genreLikeability[genre] = 3; // Default value if element somehow not found
         }
     });
+
+    // Collect scenography likeability settings
+    scenographies.forEach(scenography => {
+        const inputElement = document.querySelector(`.scenography-likeability[data-scenography="${scenography}"]`);
+        if (inputElement) {
+            scenario.scenographyLikeability[scenography] = parseInt(inputElement.value);
+        } else {
+            scenario.scenographyLikeability[scenography] = 3;
+        }
+    });
     return scenario;
 }
  
@@ -2172,7 +2294,8 @@ function applyScenarioData(scenario) {
     // 1. Gently reset current selections (without triggering full reset logic)
     document.querySelectorAll('.country-checkbox, .aq-checkbox').forEach(cb => cb.checked = false); 
     document.querySelectorAll('.jury-odds-input, .tele-odds-input').forEach(input => input.value = 100); 
-    document.querySelectorAll('.genre-select').forEach(select => select.selectedIndex = 0); 
+    document.querySelectorAll('.genre-select').forEach(select => select.selectedIndex = 0);
+    document.querySelectorAll('.scenography-select').forEach(select => select.selectedIndex = 0); 
  
     // 2. Apply custom contestants data if present in the scenario
     // This assumes 'createCountryTable' and 'addCSS' functions are globally available from your original script
@@ -2213,10 +2336,13 @@ function applyScenarioData(scenario) {
  
                 const teleInput = td.querySelector('.tele-odds-input');
                 if (teleInput) teleInput.value = countryData.teleOdds;
- 
+
                 const genreSel = td.querySelector('.genre-select');
                 if (genreSel) genreSel.value = countryData.genre;
- 
+
+                const scenographySel = td.querySelector('.scenography-select');
+                if (scenographySel && countryData.scenography) scenographySel.value = countryData.scenography;
+
                 const aqCb = td.querySelector('.checkbox-container .aq-checkbox'); // Check within .checkbox-container
                 if (aqCb) aqCb.checked = countryData.isAQ;
             }
@@ -2233,6 +2359,17 @@ function applyScenarioData(scenario) {
             if (inputElement && scenario.genreLikeability[genre] !== undefined) {
                 inputElement.value = scenario.genreLikeability[genre];
                 genreLikeability[genre] = scenario.genreLikeability[genre]; // Update the JS variable as well
+            }
+        });
+    }
+
+    // Apply scenography likeability
+    if (scenario.scenographyLikeability && typeof scenographyLikeability === 'object' && scenographyLikeability !== null) {
+        scenographies.forEach(scenography => {
+            const inputElement = document.querySelector(`.scenography-likeability[data-scenography="${scenography}"]`);
+            if (inputElement && scenario.scenographyLikeability[scenography] !== undefined) {
+                inputElement.value = scenario.scenographyLikeability[scenography];
+                scenographyLikeability[scenography] = scenario.scenographyLikeability[scenography];
             }
         });
     }
@@ -2364,14 +2501,17 @@ generateButton.addEventListener('click', () => {
     const selectedCountries = Array.from(document.querySelectorAll('.country-checkbox:checked'))
         .map(checkbox => {
             const containerDiv = checkbox.closest('.checkbox-container');
+            const tdElement = containerDiv.closest('td');
             const juryOddsInput = containerDiv.nextElementSibling.querySelector('.jury-odds-input');
             const teleOddsInput = containerDiv.nextElementSibling.querySelector('.tele-odds-input');
-            const genreSelect = containerDiv.nextElementSibling.nextElementSibling;
+            const genreSelect = tdElement.querySelector('.genre-select');
+            const scenographySelect = tdElement.querySelector('.scenography-select');
             const juryOdds = parseInt(juryOddsInput.value) || 100;
             const teleOdds = parseInt(teleOddsInput.value) || 100;
             const isAQ = containerDiv.querySelector('.aq-checkbox').checked;
-            const genre = genreSelect.value;
-            return { name: checkbox.value, juryOdds: juryOdds, teleOdds: teleOdds, isAQ: isAQ, genre: genre };
+            const genre = genreSelect ? genreSelect.value : 'Pop';
+            const scenography = scenographySelect ? scenographySelect.value : 'Minimal';
+            return { name: checkbox.value, juryOdds: juryOdds, teleOdds: teleOdds, isAQ: isAQ, genre: genre, scenography: scenography };
         });
  
     if (selectedCountries.length < 10 || selectedCountries.length > 50) {
@@ -2612,10 +2752,17 @@ function generateVotingResults(countries, votingCountries = null, genreBonuses) 
  
     allCountries.forEach(country => {
         const genreBonus = genreBonuses[country.genre] || 1;
-        const likeabilityFactor = (1 + genreLikeability[country.genre]) / 4;
-        const adjustedJuryOdds = Math.round(country.juryOdds * genreBonus * likeabilityFactor);
-        const adjustedTeleOdds = Math.round(country.teleOdds * genreBonus * likeabilityFactor);
- 
+        const genreLikeabilityFactor = (1 + (genreLikeability[country.genre] || 3)) / 4;
+        
+        // Safe scenography likeability with fallback
+        const scenographyValue = country.scenography && scenographyLikeability[country.scenography] !== undefined 
+            ? scenographyLikeability[country.scenography] 
+            : 3;
+        const scenographyLikeabilityFactor = (1 + scenographyValue) / 4;
+        
+        const adjustedJuryOdds = Math.round(country.juryOdds * genreBonus * genreLikeabilityFactor * scenographyLikeabilityFactor);
+        const adjustedTeleOdds = Math.round(country.teleOdds * genreBonus * genreLikeabilityFactor * scenographyLikeabilityFactor);
+
         results[country.name] = { 
             juryTotal: 0, 
             teleTotal: 0, 
@@ -2627,7 +2774,8 @@ function generateVotingResults(countries, votingCountries = null, genreBonuses) 
             telePlacement: 0,
             isAQ: country.isAQ,
             isCompeting: countries.some(c => c.name === country.name),
-            genre: country.genre
+            genre: country.genre,
+            scenography: country.scenography || "Minimal"
         };
     });
  
@@ -2770,6 +2918,7 @@ function displayResults(results, countries, votingOrder) {
                     <th>Rank</th>
                     <th>Country</th>
                     <th>Genre</th>
+                    <th>Scenography</th>
                     <th>Jury Points</th>
                     <th>Tele Points</th>
                     <th>Total Points</th>
@@ -2796,6 +2945,7 @@ function displayResults(results, countries, votingOrder) {
                     <span class="flag-icon flag-icon-${getCountryCode(country.name)} ml-2"></span>
                 </td>
                 <td>${results[country.name].genre}</td>
+                <td>${results[country.name].scenography || 'Minimal'}</td>
                 <td class="points">${results[country.name].juryTotal}</td>
                 <td class="points">${results[country.name].teleTotal}</td>
                 <td class="points">${results[country.name].juryTotal + results[country.name].teleTotal}</td>
@@ -2828,7 +2978,8 @@ function getQualifiers(results, count) {
         name, 
         juryOdds: data.juryOdds, 
         teleOdds: data.teleOdds, 
-        genre: data.genre 
+        genre: data.genre,
+        scenography: data.scenography || "Minimal"
     }));
 }
  
@@ -2861,6 +3012,7 @@ function createSemiFinalTable(semiFinal) {
                     <th>Rank</th>
                     <th>Country</th>
                     <th>Genre</th>
+                    <th>Scenography</th>
                     ${selectedVotingSystem === 'current' ? '<th>Jury Points</th>' : ''}
                     <th>Tele Points</th>
                     ${selectedVotingSystem === 'current' ? '<th>Total Points</th>' : ''}
@@ -2882,6 +3034,7 @@ function createSemiFinalTable(semiFinal) {
                     <span class="flag-icon flag-icon-${getCountryCode(country)} ml-2"></span>
                 </td>
                 <td>${result.genre}</td>
+                <td>${result.scenography || 'Minimal'}</td>
                 ${selectedVotingSystem === 'current' ? `<td class="points">${result.juryTotal}</td>` : ''}
                 <td class="points">${result.teleTotal}</td>
                 ${selectedVotingSystem === 'current' ? `<td class="points">${result.juryTotal + result.teleTotal}</td>` : ''}
@@ -3100,6 +3253,7 @@ function displayFinalResults(finalResults) {
                     <th>Rank</th>
                     <th>Country</th>
                     <th>Genre</th>
+                    <th>Scenography</th>
                     <th>Jury Points</th>
                     <th>Tele Points</th>
                     <th>Total Points</th>
@@ -3118,6 +3272,7 @@ function displayFinalResults(finalResults) {
                     <span class="flag-icon flag-icon-${getCountryCode(country)} ml-2"></span>
                 </td>
                 <td>${results[country].genre}</td>
+                <td>${results[country].scenography || 'Minimal'}</td>
                 <td class="points">${results[country].juryTotal}</td>
                 <td class="points">${results[country].teleTotal}</td>
                 <td class="points">${results[country].juryTotal + results[country].teleTotal}</td>
@@ -3220,6 +3375,7 @@ document.querySelectorAll('.aq-checkbox').forEach(checkbox => {
 });
  
 document.getElementById('randomizeGenresButton').addEventListener('click', randomizeGenres);
+document.getElementById('randomizeScenographiesButton').addEventListener('click', randomizeScenographies);
  
 const genreLikeabilityContainer = document.getElementById('genreLikeability');
 genres.forEach(genre => {
@@ -3242,12 +3398,37 @@ document.querySelectorAll('.genre-likeability').forEach(input => {
         }
     });
 });
- 
+
+const scenographyLikeabilityContainer = document.getElementById('scenographyLikeability');
+scenographies.forEach(scenography => {
+    const div = document.createElement('div');
+    div.innerHTML = `
+        <label>${scenography}:</label>
+        <input type="number" class="scenography-likeability" data-scenography="${scenography}" min="1" max="5" value="3">
+    `;
+    scenographyLikeabilityContainer.appendChild(div);
+});
+
+document.querySelectorAll('.scenography-likeability').forEach(input => {
+    input.addEventListener('change', (e) => {
+        const scenography = e.target.dataset.scenography;
+        const value = parseInt(e.target.value);
+        if (value >= 1 && value <= 5) {
+            scenographyLikeability[scenography] = value;
+        } else {
+            e.target.value = scenographyLikeability[scenography];
+        }
+    });
+});
+
+document.getElementById('randomizeScenographyLikeabilityButton').addEventListener('click', randomizeScenographyLikeability);
+
 dynamicVotingButton.addEventListener('click', () => {
     const { results, votingOrder } = finalResults;
     const competingCountries = Object.keys(results).filter(country => results[country].isCompeting);
- 
+
     dynamicVotingArea.innerHTML = '';
+
  
     let html = `
         <h2>Dynamic Voting Simulation</h2>
@@ -3495,114 +3676,93 @@ dynamicVotingButton.addEventListener('click', () => {
 });
  
 document.getElementById('resetButton').addEventListener('click', () => {
-    // Reset checkboxes and AQ status
-    document.querySelectorAll('.country-checkbox, .aq-checkbox').forEach(checkbox => {
-        checkbox.checked = false;
-        if (checkbox.classList.contains('aq-checkbox')) {
-            checkbox.disabled = true;
+        // Reset checkboxes and AQ status
+        document.querySelectorAll('.country-checkbox, .aq-checkbox').forEach(checkbox => {
+            checkbox.checked = false;
+            if (checkbox.classList.contains('aq-checkbox')) {
+                checkbox.disabled = true;
+            }
+        });
+ 
+        // Reset odds inputs
+        document.querySelectorAll('.jury-odds-input, .tele-odds-input').forEach(input => {
+            input.value = 100;
+        });
+ 
+        // Reset genre selections
+        document.querySelectorAll('.genre-select').forEach(select => {
+            select.selectedIndex = 0;
+        });
+
+        // Reset scenography selections
+        document.querySelectorAll('.scenography-select').forEach(select => {
+            select.selectedIndex = 0;
+        });
+
+        // Reset genre likeability
+        genres.forEach(genre => genreLikeability[genre] = 3);
+        updateGenreLikeabilityUI();
+
+        // Reset scenography likeability
+        scenographies.forEach(scenography => scenographyLikeability[scenography] = 3);
+        updateScenographyLikeabilityUI();
+
+        // Reset min and max odds
+        document.getElementById('minOdds').value = 1;
+        document.getElementById('maxOdds').value = 500;
+
+        // Reset reveal time
+        document.getElementById('revealTime').value = 10;
+
+        // Clear results and dynamic voting area
+        resultsDiv.innerHTML = '';
+        dynamicVotingArea.innerHTML = '';
+
+        // Hide and clear chart containers
+        const chartContainers = document.querySelectorAll('.semi-final-charts, #chartContainer');
+        chartContainers.forEach(container => {
+            container.innerHTML = '';
+            container.style.display = 'none';
+        });
+
+        // Remove simulation areas
+        const simulationAreas = document.querySelectorAll('#simulationArea');
+        simulationAreas.forEach(area => area.remove());
+
+        // Remove draw simulation
+        const drawSimulation = document.querySelector('.draw-simulation');
+        if (drawSimulation) {
+            drawSimulation.remove();
         }
+
+        // Reset results variables
+        semiFinal1Results = null;
+        semiFinal2Results = null;
+        finalResults = null;
+        currentSemiFinal = 1;
+
+        // Reset button states
+        document.getElementById('generateButton').disabled = false;
+        semiFinal1Button.disabled = true;
+        semiFinal2Button.disabled = true;
+        finaleButton.disabled = true;
+        simulateButton.disabled = true;
+        dynamicVotingButton.disabled = true;
+        dynamicESCVotingButton.disabled = true;
+        document.getElementById('simulateSemiDrawButton').disabled = true;
+
+        semiFinal1Button.classList.remove('btn-pink');
+        semiFinal2Button.classList.remove('btn-pink');
+
+        // Show settings card
+        document.querySelector('.settings-card').style.display = 'block';
+
+        // Scroll to top
+        window.scrollTo(0, 0);
+
+        // Update AQ checkbox status
+        updateAQCheckboxStatus();
     });
- 
-    // Reset odds inputs
-    document.querySelectorAll('.jury-odds-input, .tele-odds-input').forEach(input => {
-        input.value = 100;
-    });
- 
-    // Reset genre selections
-    document.querySelectorAll('.genre-select').forEach(select => {
-        select.selectedIndex = 0;
-    });
- 
-    // Reset genre likeability
-    genres.forEach(genre => genreLikeability[genre] = 3);
-    updateGenreLikeabilityUI();
- 
- 
-    // Reset min and max odds
-    document.getElementById('minOdds').value = 1;
-    document.getElementById('maxOdds').value = 500;
- 
-    // Reset reveal time
-    document.getElementById('revealTime').value = 10;
- 
-    // Clear results and dynamic voting area
-    resultsDiv.innerHTML = '';
-    dynamicVotingArea.innerHTML = '';
- 
-    // Hide and clear chart containers
-    const chartContainers = document.querySelectorAll('.semi-final-charts, #chartContainer');
-    chartContainers.forEach(container => {
-        container.innerHTML = '';
-        container.style.display = 'none';
-    });
- 
-    // Remove simulation areas
-    const simulationAreas = document.querySelectorAll('#simulationArea');
-    simulationAreas.forEach(area => area.remove());
- 
-    // Remove draw simulation
-    const drawSimulation = document.querySelector('.draw-simulation');
-    if (drawSimulation) {
-        drawSimulation.remove();
-    }
- 
-    // Reset results variables
-    semiFinal1Results = null;
-    semiFinal2Results = null;
-    finalResults = null;
-    currentSemiFinal = 1;
- 
-    // Reset button states
-    document.getElementById('generateButton').disabled = false;
-    semiFinal1Button.disabled = true;
-    semiFinal2Button.disabled = true;
-    finaleButton.disabled = true;
-    simulateButton.disabled = true;
-    dynamicVotingButton.disabled = true;
-    dynamicESCVotingButton.disabled = true;
-    document.getElementById('simulateSemiDrawButton').disabled = true;
- 
-    semiFinal1Button.classList.remove('btn-pink');
-    semiFinal2Button.classList.remove('btn-pink');
- 
-    // Show settings card
-    document.querySelector('.settings-card').style.display = 'block';
- 
-    // Scroll to top
-    window.scrollTo(0, 0);
- 
-    // Update AQ checkbox status
-    updateAQCheckboxStatus();
- 
-    document.querySelectorAll('.odds-input').forEach(input => {
-        input.value = 100;
-    });
- 
- 
-    genres.forEach(genre => genreLikeability[genre] = 3);
-    updateGenreLikeabilityUI();
- 
-    document.querySelectorAll('.genre-select').forEach(select => {
-        select.selectedIndex = 0;
-    });
- 
-    document.getElementById('generateButton').disabled = false;
- 
-    semiFinal1Button.disabled = true;
-    semiFinal2Button.disabled = true;
-    finaleButton.disabled = true;
-    simulateButton.disabled = true;
-    dynamicVotingButton.disabled = true;
-    dynamicESCVotingButton.disabled = true;
-    document.getElementById('simulateSemiDrawButton').disabled = true;
- 
-    semiFinal1Button.classList.remove('btn-pink');
-    semiFinal2Button.classList.remove('btn-pink');
- 
-    document.querySelector('.settings-card').style.display = 'block';
- 
-    window.scrollTo(0, 0);
-});
  
 document.getElementById('instructionsButton').addEventListener('click', () => {
     const instructionsHTML = `
@@ -3651,7 +3811,7 @@ document.getElementById('whatsNewButton').addEventListener('click', () => {
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="whatsNewModalLabel">Eurovision Simulator - The Project Returns!</h5>
+                <h5 class="modal-title" id="whatsNewModalLabel">Eurovision Simulator - Version 1.2.3 Updates!</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -3662,12 +3822,19 @@ document.getElementById('whatsNewButton').addEventListener('click', () => {
  
                 </div>
                 <!--
-                    Latest version notes: 1.2.2 (by u/alexsemilos)
-                    In this release we introduce automatic loading of participants from an
-                    external Eurovision dataset and restructure the internal data model for
-                    improved maintainability.
+                    Latest version notes: 1.2.3 (by u/alexsemilos)
+                    In this release we introduce Scenography Category and Welcome Modal
                 -->
-                <h6>Version 1.2.2</h6>
+                <h6>Version 1.2.3 (by u/alexsemilos)</h6>
+                <ul>
+                    <li style="color:green;"><strong>&lt;NEW FEATURE&gt; Scenography Category:</strong> A brand new category similar to Genre Likeability! You can now assign scenography types (Minimal, LED Screens, Props, Dancers, Pyrotechnics, Stage Levels, Projections, Interactive, Classical, Abstract) to each country and set likeability scores (1-5) that affect voting odds. Includes randomization buttons and full save/load support.</li>
+                    <li style="color:green;"><strong>&lt;NEW FEATURE&gt; Welcome Modal:</strong> New visitors are now greeted with a friendly welcome message inviting them to join our Reddit community at r/YourOwnESC. The modal appears only once per browser using localStorage.</li>
+                    <li>Scenography is now displayed in all results tables (Semi-Finals and Finals).</li>
+                    <li>Added comprehensive fallback handling for undefined scenography values to prevent calculation errors.</li>
+                    <li>Improved selector robustness for better DOM traversal and error prevention.</li>
+                    <li>Scenography data is properly integrated into getQualifiers() function.</li>
+                </ul>
+                <h6>Version 1.2.2 (by u/alexsemilos)</h6>
                 <ul>
                     <li style="color:green;"><strong>&lt;NEW FEATURE&gt; Automatic Participant List Loading:</strong> You can now fetch official participant lists by year directly from a public Eurovision dataset on GitHub. Enter a year in the new field and click <em>Load Participants</em> to import the countries.  (by u/alexsemilos)</li>
                     <li style="color:green;"><strong>Refactored Data Model:</strong> All contestant lists are now consolidated into a single object, and country tables are generated dynamically. This eliminates duplicated code and makes it easy to add new categories. (by u/alexsemilos)</li>
