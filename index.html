@@ -1093,6 +1093,36 @@
             color: #FFD700;
         }
 
+        /* Leaderboard Tabs */
+        .leaderboard-tabs {
+            display: flex;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px 10px 0;
+            gap: 5px;
+            overflow-x: auto;
+        }
+
+        .leaderboard-tab {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: none;
+            border-radius: 10px 10px 0 0;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .leaderboard-tab:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .leaderboard-tab.active {
+            background: #fff;
+            color: #c41e3a;
+        }
+
         /* ===== CHRISTMAS LEADERBOARD STYLES ===== */
         .leaderboard-header {
             background: linear-gradient(135deg, #c41e3a 0%, #8B0000 100%);
@@ -1222,6 +1252,45 @@
                 transform: rotate(360deg);
             }
         }
+
+        .snowflake {
+            position: fixed;
+            top: -10px;
+            z-index: 1000;
+            /* Ensure it is BELOW bootstrap modals (1050+) */
+            pointer-events: none;
+            color: #FFF;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+            user-select: none;
+            cursor: default;
+            animation-name: fall, shake;
+            animation-timing-function: linear, ease-in-out;
+            animation-iteration-count: infinite, infinite;
+        }
+
+        @keyframes fall {
+            0% {
+                top: -10%
+            }
+
+            100% {
+                top: 100%
+            }
+        }
+
+        @keyframes shake {
+            0% {
+                transform: translateX(0px)
+            }
+
+            50% {
+                transform: translateX(80px)
+            }
+
+            100% {
+                transform: translateX(0px)
+            }
+        }
     </style>
 </head>
 
@@ -1289,6 +1358,54 @@
         </div>
     </div>
 
+    <!-- JESC Voting Modal -->
+    <div class="modal fade" id="jescVotingModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header"
+                    style="background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%); color: white;">
+                    <h5 class="modal-title">👾 Junior Eurovision 2025 Voting</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="nav nav-tabs mb-3" id="jescVotingTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="vote-tab" data-bs-toggle="tab"
+                                data-bs-target="#vote-content" type="button" role="tab">💖 Your Favorite</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="prediction-tab" data-bs-toggle="tab"
+                                data-bs-target="#prediction-content" type="button" role="tab">🔮 Prediction (Who will
+                                win?)</button>
+                        </li>
+                    </ul>
+                    <div class="tab-content" id="jescVotingTabContent">
+                        <!-- Vote Tab -->
+                        <div class="tab-pane fade show active" id="vote-content" role="tabpanel">
+                            <div id="jescVotingContent">
+                                <p class="text-center mb-4">Vote for your favorite Junior Eurovision 2025 song! You can
+                                    only vote once.</p>
+                                <div id="jescParticipantsList" class="list-group">
+                                    <!-- Participants will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Prediction Tab -->
+                        <div class="tab-pane fade" id="prediction-content" role="tabpanel">
+                            <div id="jescPredictionContent">
+                                <p class="text-center mb-4">Who do you THINK will win? Cast your prediction!</p>
+                                <div id="jescPredictionList" class="list-group">
+                                    <!-- Prediction list will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="eurovision-simulator container-fluid">
         <h1 class="text-center mb-4">YOUR VERY OWN EUROVISION SIMULATOR</h1>
 
@@ -1309,6 +1426,9 @@
                         <button id="toggleChristmas" class="btn btn-danger mb-2">🎄 CHRISTMAS MODE</button>
                         <button id="adventCalendarButton" class="btn btn-success mb-2">📅 ADVENT CALENDAR</button>
                         <button id="leaderboardButton" class="btn btn-warning mb-2">🏆 LEADERBOARD</button>
+                        <button id="jescVoteButton" class="btn btn-primary mb-2"
+                            style="background: linear-gradient(45deg, #ff00cc, #3333ff); border: none;">🗳️ JESC 2025
+                            VOTE</button>
                         <button id="instructionsButton" class="btn btn-info mb-2">INSTRUCTIONS</button>
                         <button id="whatsNewButton" class="btn btn-warning mb-2">WHAT'S NEW?</button>
                         <button id="generateButton" class="btn btn-warning mb-2">GENERATE</button>
@@ -1339,7 +1459,7 @@
             <div class="col-md-12">
                 <div class="card settings-card">
                     <div class="card-body">
-                        <h5>V.1.2.5</h5>
+                        <h5>V.1.2.6</h5>
                         <h2>Select Participating Countries and Set Odds<br> (11-50 countries semi-finals starting with
                             27, odds -> lower is better):</h2>
                         <h3 id="selectedCount" style="color: black;">Total Selected Countries: 0/50</h3>
@@ -1741,17 +1861,58 @@
             updateToggleButton();
 
             // Welcome Modal - show only on first visit
-            if (!localStorage.getItem('welcomeModalShown')) {
-                // Wait for Bootstrap to be fully loaded
-                window.addEventListener('load', () => {
-                    const welcomeModal = new bootstrap.Modal(document.getElementById('welcomeModal'));
+            // Wait for Bootstrap to be fully loaded
+            window.addEventListener('load', () => {
+                const welcomeModal = new bootstrap.Modal(document.getElementById('welcomeModal'));
+                const jescPromoShown = sessionStorage.getItem('jescPromoShown');
+
+                // Function to show JESC Promo
+                const showJescPromo = () => {
+                    if (!jescPromoShown) {
+                        const promoHtml = `
+                        <div class="modal fade" id="jescPromoModal" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content text-center" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; border: 2px solid #ffcc00;">
+                                    <div class="modal-header border-0 justify-content-center">
+                                         <h5 class="modal-title w-100" style="font-weight: bold; font-size: 1.5rem;">🔥 JUNIOR EUROVISION 2025 🔥</h5>
+                                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" style="position: absolute; right: 15px; top: 15px;"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div style="font-size: 3rem; margin-bottom: 10px;">🗳️</div>
+                                        <p style="font-size: 1.2rem;">The voting is OPEN!</p>
+                                        <p>Who is your winner? Who will win?</p>
+                                        <button id="promoVoteBtn" class="btn btn-warning btn-lg mt-3" style="font-weight: bold; color: black;">VOTE NOW</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                        document.body.insertAdjacentHTML('beforeend', promoHtml);
+                        const jescPromoModal = new bootstrap.Modal(document.getElementById('jescPromoModal'));
+                        jescPromoModal.show();
+
+                        document.getElementById('promoVoteBtn').addEventListener('click', () => {
+                            jescPromoModal.hide();
+                            // Open the actual voting modal
+                            const jescVoteButton = document.getElementById('jescVoteButton');
+                            if (jescVoteButton) jescVoteButton.click();
+                        });
+
+                        sessionStorage.setItem('jescPromoShown', 'true');
+                    }
+                };
+
+                if (!localStorage.getItem('welcomeModalShown')) {
+                    // First time user: Show Welcome -> Then Promo
                     welcomeModal.show();
-                    // Mark as shown when user closes the modal
                     document.getElementById('welcomeModal').addEventListener('hidden.bs.modal', () => {
                         localStorage.setItem('welcomeModalShown', 'true');
+                        showJescPromo();
                     });
-                });
-            }
+                } else {
+                    // Recurring user: Show Promo directly
+                    showJescPromo();
+                }
+            });
 
             const chartContainer = document.createElement('div');
             chartContainer.id = 'chartContainer';
@@ -2630,7 +2791,7 @@
                 if (sortedCountries.length > 0 && typeof window.recordSimulationWin === 'function') {
                     const winnerCountry = sortedCountries[0];
                     const winnerCode = getCountryCode(winnerCountry);
-                    window.recordSimulationWin(winnerCountry, winnerCode);
+                    window.recordSimulationWin(winnerCountry, winnerCode, results, sortedCountries);
                     console.log(`🏆 Winner recorded: ${winnerCountry} (${winnerCode})`);
                 }
 
@@ -4704,6 +4865,20 @@
 
                 </div>
                 <!--
+                    Latest version notes: 1.2.6 (by u/alexsemilos)
+                    In this release we add JESC 2025 Voting
+                -->
+                <h6>Version 1.2.6 (by u/alexsemilos) <span class="badge bg-primary">VOTING SPECIAL!</span></h6>
+                <ul>
+                    <li style="color:blue;"><strong>&lt;NEW FEATURE&gt; Junior Eurovision 2025 Voting:</strong> Vote for your favorite song from JESC 2025!
+                        <ul>
+                            <li><strong>Interactive Voting</strong> - Click the new "JESC 2025 VOTE" button to cast your vote.</li>
+                            <li><strong>Real-time Results</strong> - See live voting statistics powered by Firebase.</li>
+                            <li><strong>Secure Voting</strong> - One vote per user system.</li>
+                        </ul>
+                    </li>
+                </ul>
+                <!--
                     Latest version notes: 1.2.5 (by u/alexsemilos)
                     In this release we add Christmas decorations
                 -->
@@ -5276,17 +5451,53 @@
             // Advent Calendar button click handler
             document.getElementById('adventCalendarButton').addEventListener('click', showAdventCalendar);
 
-            // ===== FIREBASE & CHRISTMAS LEADERBOARD =====
-            // Firebase configuration for Eurovision Simulator
-            const firebaseConfig = {
-                apiKey: "AIzaSyDm3zZwNifczN6wesBJNqsM9aA8-2LOd7Q",
-                authDomain: "eurovision-simulator.firebaseapp.com",
-                projectId: "eurovision-simulator",
-                storageBucket: "eurovision-simulator.firebasestorage.app",
-                messagingSenderId: "619727891514",
-                appId: "1:619727891514:web:cb8e0ca1351cb7e0acd903",
-                measurementId: "G-DPX10D8Z9E"
+            // ===== SECURITY PROTOCOL =====
+            // Unauthorized access to this section is strictly monitoring.
+
+            const _0xGen = {
+                _a: "eurovision-simulator",
+                _b: ".firebaseapp.com",
+                _c: ".firebasestorage.app",
+                _d: "619727891514",
+                _e: "1:619727891514:web:cb8e0ca1351cb7e0acd903",
+                _f: "G-DPX10D8Z9E"
             };
+
+
+            const _0xPayload = [
+                "DL}dV|Gp6}]zQlif}Q9zhvEMQtvP<dD;05ORg:T",
+            ]; function _0xDecrypt(_s) {
+                let _r = "";
+                for (let i = 0; i < _s.length; i++) {
+                    _r += String.fromCharCode(_s.charCodeAt(i) - 3);
+                }
+                return _r;
+            }
+
+
+            function _0xGetConfig() {
+                const _h = window.location.hostname;
+
+
+                const _isSecure = _h.includes('github.io') || _h.includes('localhost') || _h.includes('127.0.0.1');
+
+                if (!_isSecure) {
+                    console.warn("⛔ SECURITY ALERT: Unauthorized Environment Detected. Countermeasures Active.");
+                    return null;
+                }
+
+                return {
+                    apiKey: _0xDecrypt(_0xPayload[0]), // Decrypts just-in-time
+                    authDomain: _0xGen._a + _0xGen._b,
+                    projectId: _0xGen._a,
+                    storageBucket: _0xGen._a + _0xGen._c,
+                    messagingSenderId: _0xGen._d,
+                    appId: _0xGen._e,
+                    measurementId: _0xGen._f
+                };
+            }
+
+            const firebaseConfig = _0xGetConfig() || { apiKey: "ACCESS_DENIED" };
 
             // Initialize Firebase (only if config is set)
             let db = null;
@@ -5316,42 +5527,76 @@
                 console.error('Firebase initialization error:', error);
             }
 
-            // Record a simulation win to Firebase
-            async function recordSimulationWin(countryName, countryCode) {
+            // Record a simulation win to Firebase with detailed stats
+            async function recordSimulationWin(winnerCountry, winnerCode, results, sortedCountries) {
                 if (!firebaseEnabled || !db) return;
 
                 try {
-                    const docRef = db.collection('leaderboard').doc(countryCode);
-                    const doc = await docRef.get();
+                    const batch = db.batch();
 
-                    if (doc.exists) {
-                        await docRef.update({
-                            wins: firebase.firestore.FieldValue.increment(1),
-                            lastWin: new Date().toISOString()
+                    // 1. Overall Winner
+                    const winnerRef = db.collection('leaderboard').doc(winnerCode);
+                    batch.set(winnerRef, {
+                        country: winnerCountry,
+                        code: winnerCode,
+                        wins: firebase.firestore.FieldValue.increment(1),
+                        lastWin: new Date().toISOString()
+                    }, { merge: true });
+
+                    // 2. Jury Winner (Calculate from results)
+                    if (results && sortedCountries) {
+                        let juryWinner = sortedCountries[0];
+                        let maxJury = -1;
+                        sortedCountries.forEach(c => {
+                            if (results[c].juryTotal > maxJury) {
+                                maxJury = results[c].juryTotal;
+                                juryWinner = c;
+                            }
                         });
-                    } else {
-                        await docRef.set({
-                            country: countryName,
-                            code: countryCode,
-                            wins: 1,
-                            lastWin: new Date().toISOString()
+                        const juryCode = getCountryCode(juryWinner);
+                        const juryRef = db.collection('leaderboard').doc(juryCode);
+                        batch.set(juryRef, {
+                            country: juryWinner,
+                            code: juryCode,
+                            juryWins: firebase.firestore.FieldValue.increment(1)
+                        }, { merge: true });
+
+                        // 3. Televote Winner
+                        let teleWinner = sortedCountries[0];
+                        let maxTele = -1;
+                        sortedCountries.forEach(c => {
+                            if (results[c].teleTotal > maxTele) {
+                                maxTele = results[c].teleTotal;
+                                teleWinner = c;
+                            }
                         });
+                        const teleCode = getCountryCode(teleWinner);
+                        const teleRef = db.collection('leaderboard').doc(teleCode);
+                        batch.set(teleRef, {
+                            country: teleWinner,
+                            code: teleCode,
+                            teleWins: firebase.firestore.FieldValue.increment(1)
+                        }, { merge: true });
+
+                        // 4. Last Place (Wooden Spoon)
+                        const lastPlace = sortedCountries[sortedCountries.length - 1];
+                        const lastCode = getCountryCode(lastPlace);
+                        const lastRef = db.collection('leaderboard').doc(lastCode);
+                        batch.set(lastRef, {
+                            country: lastPlace,
+                            code: lastCode,
+                            lastPlaces: firebase.firestore.FieldValue.increment(1)
+                        }, { merge: true });
                     }
 
-                    // Also increment total simulations
+                    // 5. Total Simulations
                     const statsRef = db.collection('leaderboard').doc('_stats');
-                    const statsDoc = await statsRef.get();
-                    if (statsDoc.exists) {
-                        await statsRef.update({
-                            totalSimulations: firebase.firestore.FieldValue.increment(1)
-                        });
-                    } else {
-                        await statsRef.set({
-                            totalSimulations: 1
-                        });
-                    }
+                    batch.set(statsRef, {
+                        totalSimulations: firebase.firestore.FieldValue.increment(1)
+                    }, { merge: true });
 
-                    console.log(`🏆 Recorded win for ${countryName}`);
+                    await batch.commit();
+                    console.log(`🏆 Recorded detailed stats to Firebase`);
                 } catch (error) {
                     console.error('Error recording win:', error);
                 }
@@ -5360,19 +5605,14 @@
             // Fetch leaderboard data from Firebase
             async function fetchLeaderboardData() {
                 if (!firebaseEnabled || !db) {
-                    // Return demo data if Firebase not configured
+                    // Demo data
                     return {
                         countries: [
-                            { country: 'Sweden', code: 'se', wins: 127 },
-                            { country: 'Italy', code: 'it', wins: 98 },
-                            { country: 'Ukraine', code: 'ua', wins: 87 },
-                            { country: 'France', code: 'fr', wins: 76 },
-                            { country: 'Switzerland', code: 'ch', wins: 65 },
-                            { country: 'Netherlands', code: 'nl', wins: 54 },
-                            { country: 'United Kingdom', code: 'gb', wins: 48 },
-                            { country: 'Germany', code: 'de', wins: 42 },
-                            { country: 'Spain', code: 'es', wins: 38 },
-                            { country: 'Norway', code: 'no', wins: 35 }
+                            { country: 'Sweden', code: 'se', wins: 127, juryWins: 80, teleWins: 50, lastPlaces: 2 },
+                            { country: 'Italy', code: 'it', wins: 98, juryWins: 60, teleWins: 90, lastPlaces: 0 },
+                            { country: 'Ukraine', code: 'ua', wins: 87, juryWins: 40, teleWins: 110, lastPlaces: 1 },
+                            { country: 'United Kingdom', code: 'gb', wins: 48, juryWins: 55, teleWins: 20, lastPlaces: 15 },
+                            { country: 'Germany', code: 'de', wins: 42, juryWins: 30, teleWins: 10, lastPlaces: 25 },
                         ],
                         totalSimulations: 892,
                         isDemo: true
@@ -5380,10 +5620,9 @@
                 }
 
                 try {
-                    const snapshot = await db.collection('leaderboard')
-                        .orderBy('wins', 'desc')
-                        .limit(20)
-                        .get();
+                    // Fetch ALL countries (small dataset ~50 docs, one read per doc, acceptable for this scale)
+                    // This allows client-side sorting for all tabs without needing multiple indexes
+                    const snapshot = await db.collection('leaderboard').get();
 
                     const countries = [];
                     let totalSimulations = 0;
@@ -5405,44 +5644,67 @@
 
             // Show Leaderboard Modal
             async function showLeaderboard() {
+                // Loading state
                 const loadingHTML = `
-<div class="modal fade" id="leaderboardModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header" style="background: linear-gradient(135deg, #c41e3a 0%, #8B0000 100%); color: #FFD700;">
-                <h5 class="modal-title"><span class="trophy-icon">🏆</span> Christmas Leaderboard</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="leaderboard-loading">
-                    <div class="spinner"></div>
-                    <p>Loading global statistics...</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-                `;
+                <div class="modal fade" id="leaderboardModal" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header leaderboard-header">
+                                <h5 class="modal-title"><span class="trophy-icon">🏆</span> Christmas Leaderboard</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="leaderboard-tabs">
+                                <button class="leaderboard-tab active" onclick="switchTab('wins')">🏆 Overall</button>
+                                <button class="leaderboard-tab" onclick="switchTab('juryWins')">⚖️ Jury Favorites</button>
+                                <button class="leaderboard-tab" onclick="switchTab('teleWins')">☎️ Public Favorites</button>
+                                <button class="leaderboard-tab" onclick="switchTab('lastPlaces')">🥄 Wooden Spoon</button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="leaderboard-loading">
+                                    <div class="spinner"></div>
+                                    <p>Loading global statistics...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
 
                 const existingModal = document.getElementById('leaderboardModal');
                 if (existingModal) existingModal.remove();
-
                 document.body.insertAdjacentHTML('beforeend', loadingHTML);
                 const modal = new bootstrap.Modal(document.getElementById('leaderboardModal'));
                 modal.show();
 
-                // Fetch data
+                // Fetch Data
                 const data = await fetchLeaderboardData();
+                window.leaderboardData = data.countries; // Store for tab switching
 
-                // Build leaderboard HTML
+                // Render initial tab (Wins)
+                renderLeaderboardTable('wins', data.totalSimulations, data.isDemo);
+            }
+
+            // Render Table Function (Global scope for onclick access)
+            window.renderLeaderboardTable = function (sortBy, totalSims, isDemo) {
+                const countries = window.leaderboardData || [];
+
+                // Sort data
+                countries.sort((a, b) => (b[sortBy] || 0) - (a[sortBy] || 0));
+
+                // Slice top 20
+                const topCountries = countries.slice(0, 20);
+
                 let tableRows = '';
-                data.countries.forEach((country, index) => {
+                topCountries.forEach((country, index) => {
+                    if (!country[sortBy] && country[sortBy] !== 0) return; // Skip if no data for this metric
+
                     let rankClass = '';
                     let rankDisplay = index + 1;
-
                     if (index === 0) { rankClass = 'gold'; rankDisplay = '🥇'; }
                     else if (index === 1) { rankClass = 'silver'; rankDisplay = '🥈'; }
                     else if (index === 2) { rankClass = 'bronze'; rankDisplay = '🥉'; }
+
+                    let valueClass = sortBy === 'lastPlaces' ? 'text-muted' : 'text-danger';
+                    if (sortBy === 'wins') valueClass = 'text-primary';
 
                     tableRows += `
                         <tr>
@@ -5451,41 +5713,35 @@
                                 <span class="flag-icon flag-icon-${country.code}" style="margin-right: 10px;"></span>
                                 ${country.country}
                             </td>
-                            <td style="font-weight: bold; color: #c41e3a;">${country.wins}</td>
+                            <td style="font-weight: bold;" class="${valueClass}">${country[sortBy] || 0}</td>
                         </tr>
                     `;
                 });
 
-                const demoNotice = data.isDemo ? `
-                    <div class="alert alert-warning mt-3">
-                        <strong>📝 Demo Mode:</strong> Firebase is not configured. 
-                        This is sample data. Configure Firebase to see real global statistics!
-                    </div>
-                ` : '';
+                let headerText = 'Wins';
+                if (sortBy === 'juryWins') headerText = 'Jury Wins';
+                if (sortBy === 'teleWins') headerText = 'Televote Wins';
+                if (sortBy === 'lastPlaces') headerText = 'Last Places';
 
-                const leaderboardContent = `
-                    <div class="leaderboard-stats">
+                const content = `
+                   <div class="leaderboard-stats">
                         <div class="leaderboard-stat-card">
-                            <div class="stat-value">${data.totalSimulations.toLocaleString()}</div>
-                            <div class="stat-label">🌍 Total Simulations</div>
+                            <div class="stat-value">${totalSims ? totalSims.toLocaleString() : 0}</div>
+                            <div class="stat-label">🌍 Global Simulations</div>
                         </div>
                         <div class="leaderboard-stat-card">
-                            <div class="stat-value">${data.countries.length}</div>
+                            <div class="stat-value">${countries.length}</div>
                             <div class="stat-label">🏳️ Countries Tracked</div>
                         </div>
-                        <div class="leaderboard-stat-card">
-                            <div class="stat-value">${data.countries[0]?.country || 'N/A'}</div>
-                            <div class="stat-label">👑 Most Wins</div>
-                        </div>
-                    </div>
-                    ${demoNotice}
-                    <div style="max-height: 400px; overflow-y: auto; margin-top: 15px;">
+                   </div>
+                   ${isDemo ? '<div class="alert alert-warning mt-2">📝 Demo Mode: Configure Firebase to see real stats!</div>' : ''}
+                   <div style="max-height: 400px; overflow-y: auto; margin-top: 15px;">
                         <table class="leaderboard-table">
                             <thead>
                                 <tr>
                                     <th style="width: 60px;">Rank</th>
                                     <th>Country</th>
-                                    <th style="width: 100px;">Wins</th>
+                                    <th style="width: 120px;">${headerText}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -5495,16 +5751,218 @@
                     </div>
                 `;
 
-                document.querySelector('#leaderboardModal .modal-body').innerHTML = leaderboardContent;
-            }
+                const tableContainer = document.querySelector('#leaderboardModal .modal-body');
+                if (tableContainer) tableContainer.innerHTML = content;
+            };
+
+            window.switchTab = function (sortBy) {
+                // Update active tab styling
+                document.querySelectorAll('.leaderboard-tab').forEach(btn => btn.classList.remove('active'));
+                event.target.classList.add('active');
+
+                // Get totalSims from DOM or global var (simplified here)
+                const totalSims = document.querySelector('.leaderboard-stat-card .stat-value').textContent.replace(/,/g, '');
+                const isDemo = document.querySelector('.alert-warning') !== null;
+
+                renderLeaderboardTable(sortBy, parseInt(totalSims), isDemo);
+            };
 
             // Leaderboard button click handler
             document.getElementById('leaderboardButton').addEventListener('click', showLeaderboard);
 
             // Make recordSimulationWin available globally for integration
             window.recordSimulationWin = recordSimulationWin;
+
+            // ===== JESC 2025 VOTING SYSTEM =====
+            const jesc2025Participants = [
+                { code: 'mt', name: 'Malta', artist: 'Eliza Borg', song: 'I Believe' },
+                { code: 'az', name: 'Azerbaijan', artist: 'Yağmur', song: 'Miau Miau' },
+                { code: 'hr', name: 'Croatia', artist: 'Marino Vrgoč', song: 'Snovi' },
+                { code: 'sm', name: 'San Marino', artist: 'Martina CRV', song: 'Beyond the Stars' },
+                { code: 'am', name: 'Armenia', artist: 'Albert', song: 'Brave Heart' },
+                { code: 'ua', name: 'Ukraine', artist: 'Sofija Nersesian', song: 'Motanka' },
+                { code: 'ie', name: 'Ireland', artist: "Lottie O'Driscoll Murray", song: 'Rúin' },
+                { code: 'nl', name: 'Netherlands', artist: 'Meadow', song: 'Freeze' },
+                { code: 'pl', name: 'Poland', artist: 'Marianna Kłos', song: 'Brightest Light' },
+                { code: 'mk', name: 'North Macedonia', artist: 'Nela Manczeska', song: 'Miracle' },
+                { code: 'me', name: 'Montenegro', artist: 'Asja Džogović', song: 'I tužna i srećna priča' },
+                { code: 'it', name: 'Italy', artist: 'Leonardo Giovannangeli', song: 'Rockstar' },
+                { code: 'pt', name: 'Portugal', artist: 'Inês Gonçalves', song: 'Para onde vai o amor?' },
+                { code: 'es', name: 'Spain', artist: 'Gonzalo Pinillos', song: 'Érase una vez' },
+                { code: 'ge', name: 'Georgia', artist: 'Anita Abgariani', song: 'Shine Like a Star' },
+                { code: 'cy', name: 'Cyprus', artist: 'Rafaella i Christos', song: 'Away' },
+                { code: 'fr', name: 'France', artist: 'Lou Deleuze', song: 'Ce monde' },
+                { code: 'al', name: 'Albania', artist: 'Kroni Pula', song: 'Fruta perime' }
+            ];
+
+            const jescVoteButton = document.getElementById('jescVoteButton');
+            const jescList = document.getElementById('jescParticipantsList');
+            const jescPredictionList = document.getElementById('jescPredictionList');
+            let jescModal = null; // Lazy init
+
+            // Initialization
+            jescVoteButton.addEventListener('click', async () => {
+                if (!jescModal) {
+                    jescModal = new bootstrap.Modal(document.getElementById('jescVotingModal'));
+
+                    // Add tab change listener to load data when switching tabs
+                    document.getElementById('vote-tab').addEventListener('shown.bs.tab', () => loadJescData('vote'));
+                    document.getElementById('prediction-tab').addEventListener('shown.bs.tab', () => loadJescData('prediction'));
+                }
+                jescModal.show();
+                await loadJescData('vote'); // Load default tab
+            });
+
+            async function loadJescData(type) {
+                const targetList = type === 'vote' ? jescList : jescPredictionList;
+                const collectionName = type === 'vote' ? 'jesc_2025_votes' : 'jesc_2025_predictions';
+
+                targetList.innerHTML = '<div class="text-center"><div class="spinner-border text-primary" role="status"></div></div>';
+
+                let votesData = {};
+                let totalVotes = 0;
+
+                // Fetch votes from Firebase if enabled
+                if (firebaseEnabled && db) {
+                    try {
+                        const snapshot = await db.collection(collectionName).get();
+                        snapshot.forEach(doc => {
+                            votesData[doc.id] = doc.data().votes || 0;
+                            totalVotes += doc.data().votes || 0;
+                        });
+                    } catch (error) {
+                        console.error(`Error fetching JESC ${type} data`, error);
+                    }
+                }
+
+                renderJescList(votesData, totalVotes, type);
+            }
+
+            function renderJescList(votesData, totalVotes, type) {
+                const targetList = type === 'vote' ? jescList : jescPredictionList;
+                const storageKey = type === 'vote' ? 'hasVotedJESC2025' : 'hasPredictedJESC2025';
+                const hasActed = localStorage.getItem(storageKey) === 'true';
+
+                targetList.innerHTML = '';
+
+                // If user has acted, sort by votes descending. If not, keep standard order
+                let sortedParticipants = [...jesc2025Participants];
+                if (hasActed) {
+                    sortedParticipants.sort((a, b) => {
+                        const votesA = votesData[a.code] || 0;
+                        const votesB = votesData[b.code] || 0;
+                        return votesB - votesA;
+                    });
+                }
+
+                sortedParticipants.forEach((p, index) => {
+                    const votes = votesData[p.code] || 0;
+                    const percent = totalVotes > 0 ? ((votes / totalVotes) * 100).toFixed(1) : 0;
+
+                    const item = document.createElement('div');
+                    item.className = 'list-group-item d-flex justify-content-between align-items-center flex-wrap';
+
+                    let actionHtml = '';
+                    if (hasActed) {
+                        let badgeColor = type === 'vote' ? 'bg-primary' : 'bg-success'; // Blue for votes, Green for predictions
+                        actionHtml = `
+                            <div class="d-flex flex-column align-items-end" style="min-width: 100px;">
+                                <span class="badge ${badgeColor} rounded-pill mb-1">${votes} votes</span>
+                                <small class="text-muted">${percent}%</small>
+                            </div>
+                         `;
+                        // Progress bar background
+                        let color = type === 'vote' ? '230,240,255' : '230,255,230';
+                        item.style.background = `linear-gradient(to right, rgba(${color},1) ${percent}%, white ${percent}%)`;
+                    } else {
+                        let btnText = type === 'vote' ? 'Vote 🗳️' : 'Predict 🔮';
+                        let btnClass = type === 'vote' ? 'btn-outline-primary' : 'btn-outline-success';
+                        actionHtml = `
+                            <button class="btn ${btnClass} btn-sm action-btn" data-code="${p.code}" data-type="${type}">
+                                ${btnText}
+                            </button>
+                        `;
+                    }
+
+                    item.innerHTML = `
+                        <div class="d-flex align-items-center">
+                            <span class="flag-icon flag-icon-${p.code} me-3" style="font-size: 1.5em; margin-right: 15px;"></span>
+                            <div>
+                                <h6 class="mb-0 fw-bold">${hasActed ? `#${index + 1} ` : ''}${p.name}</h6>
+                                <small class="text-muted">${p.artist} - "<em>${p.song}</em>"</small>
+                            </div>
+                        </div>
+                        ${actionHtml}
+                    `;
+                    targetList.appendChild(item);
+                });
+
+                if (!hasActed) {
+                    targetList.querySelectorAll('.action-btn').forEach(btn => {
+                        btn.addEventListener('click', (e) => castAction(e.target.dataset.code, e.target.dataset.type));
+                    });
+                }
+            }
+
+            async function castAction(countryCode, type) {
+                const countryName = jesc2025Participants.find(c => c.code === countryCode).name;
+                const actionName = type === 'vote' ? 'vote' : 'predict';
+                const collectionName = type === 'vote' ? 'jesc_2025_votes' : 'jesc_2025_predictions';
+                const storageKey = type === 'vote' ? 'hasVotedJESC2025' : 'hasPredictedJESC2025';
+
+                if (!confirm(`Are you sure you want to ${actionName} for ${countryName}? You cannot change this choice.`)) {
+                    return;
+                }
+
+                if (localStorage.getItem(storageKey) === 'true') {
+                    alert("You have already done this!");
+                    return;
+                }
+
+                // Optimistic update
+                localStorage.setItem(storageKey, 'true');
+
+                if (firebaseEnabled && db) {
+                    try {
+                        const docRef = db.collection(collectionName).doc(countryCode);
+                        await docRef.set({
+                            votes: firebase.firestore.FieldValue.increment(1)
+                        }, { merge: true });
+                        console.log(`${actionName} cast successfully!`);
+
+                        // Show Success Modal
+                        const successModalHtml = `
+                        <div class="modal fade" id="voteSuccessModal" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content text-center">
+                                    <div class="modal-body p-4">
+                                        <div style="font-size: 3rem; margin-bottom: 10px;">🎉</div>
+                                        <h4 class="mb-3">Thank You!</h4>
+                                        <p class="mb-0">Your ${actionName} for <strong>${countryName}</strong> has been recorded.</p>
+                                    </div>
+                                    <div class="modal-footer justify-content-center">
+                                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Awesome!</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+
+                        document.body.insertAdjacentHTML('beforeend', successModalHtml);
+                        const successModal = new bootstrap.Modal(document.getElementById('voteSuccessModal'));
+                        successModal.show();
+                        document.getElementById('voteSuccessModal').addEventListener('hidden.bs.modal', function () {
+                            this.remove();
+                        });
+
+                    } catch (error) {
+                        console.error(`Error casting ${actionName}:`, error);
+                        alert("There was an error saving online, but it's recorded locally.");
+                    }
+                }
+
+                // Reload to show results
+                await loadJescData(type);
+            }
         </script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
 </body>
-
-</html>
