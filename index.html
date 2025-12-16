@@ -10,6 +10,7 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-check-compat.js"></script>
     <style>
         :root {
@@ -1295,6 +1296,31 @@
 </head>
 
 <body>
+    <style>
+        /* ... existing styles ... */
+        .badge-role {
+            font-size: 0.8em;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 5px;
+            text-transform: uppercase;
+            font-weight: bold;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .badge-admin {
+            background-color: #dc3545;
+            color: white;
+            border: 1px solid #b02a37;
+        }
+
+        .badge-dev {
+            background-color: #0d6efd;
+            color: white;
+            border: 1px solid #0a58ca;
+        }
+    </style>
     <!-- Christmas Lights -->
     <div class="christmas-lights">
         <div class="lights-wire"></div>
@@ -1406,6 +1432,122 @@
         </div>
     </div>
 
+    <!-- Nickname Modal -->
+    <div class="modal fade" id="nicknameModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">👤 Choose a Nickname</h5>
+                </div>
+                <div class="modal-body">
+                    <p>Welcome! Please choose a unique nickname to be displayed on the leaderboard.</p>
+                    <div class="mb-3">
+                        <label for="nicknameInput" class="form-label">Nickname</label>
+                        <input type="text" class="form-control" id="nicknameInput" placeholder="Enter your nickname..."
+                            maxlength="15">
+                        <div id="nicknameError" class="text-danger mt-1 small"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="saveNicknameButton">Save & Continue</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Modal (View/Edit) -->
+    <div class="modal fade" id="profileModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background: #ffffff; color: #333;">
+                <div class="modal-header"
+                    style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <h5 class="modal-title">👤 User Profile</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div id="profileLoading" class="spinner-border text-primary" role="status"></div>
+                    <div id="profileContent" style="display: none;">
+                        <img id="profileImage" src="" class="rounded-circle mb-3 border border-3 border-light shadow"
+                            style="width: 100px; height: 100px; object-fit: cover;">
+                        <h3 id="profileNickname" class="fw-bold mb-1"></h3>
+                        <div id="profileBadges" class="mb-2"></div>
+                        <p id="profileBio" class="text-muted fst-italic px-4"></p>
+
+                        <div id="profileTags" class="d-flex justify-content-center flex-wrap gap-2 mb-3"></div>
+
+                        <div id="profileStats" class="row g-2 mb-3 border-top border-bottom py-2">
+                            <div class="col-6 border-end">
+                                <h5 class="fw-bold mb-0" id="profileSimulations">-</h5>
+                                <small class="text-muted">Simulations</small>
+                            </div>
+                            <div class="col-6">
+                                <h5 class="fw-bold mb-0" id="profileJoinDate">-</h5>
+                                <small class="text-muted">Joined</small>
+                            </div>
+                        </div>
+
+                        <!-- Edit Controls (Only visible to owner) -->
+                        <div id="editProfileControls" style="display: none;"
+                            class="mt-4 p-3 bg-light rounded text-start">
+                            <h6 class="fw-bold border-bottom pb-2">✏️ Edit Profile</h6>
+                            <div class="mb-3">
+                                <label class="form-label small">Avatar URL</label>
+                                <input type="text" class="form-control form-control-sm" id="editAvatarUrl"
+                                    placeholder="https://...">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small">Bio</label>
+                                <textarea class="form-control form-control-sm" id="editBio" rows="2" maxlength="100"
+                                    placeholder="Tell us about yourself..."></textarea>
+                            </div>
+                            <!-- REMOVED PREMATURE CLOSING DIV -->
+
+                            <div class="mb-3">
+                                <label class="form-label small">Favorite Country (Drag & Drop)</label>
+                                <div id="favCountryDropZone"
+                                    class="border p-2 mb-2 text-center d-flex align-items-center justify-content-center"
+                                    style="min-height: 50px; background: #f8f9fa; border-style: dashed !important; border-radius: 6px;">
+                                    <span class="text-muted small">Drag your favorite country here</span>
+                                </div>
+                                <input type="text" id="favCountrySearch" class="form-control form-control-sm mb-2"
+                                    placeholder="Search countries..." onkeyup="filterCountries()">
+                                <div id="favCountrySource" class="d-flex flex-wrap gap-2"
+                                    style="max-height: 150px; overflow-y: auto; border: 1px solid #dee2e6; padding: 5px; border-radius: 4px; background: #fff;">
+                                    <!-- Countries injected by JS -->
+                                </div>
+                                <input type="hidden" id="editFavCountryCode">
+                                <input type="hidden" id="editFavCountryName">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small">Location</label>
+                                <input type="text" class="form-control form-control-sm" id="editLocation"
+                                    placeholder="City, Country">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small">Social Handle (e.g. @username)</label>
+                                <input type="text" class="form-control form-control-sm" id="editSocial"
+                                    placeholder="@username">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small">Tags</label>
+                                <div class="d-flex flex-wrap gap-2" id="editTagsContainer">
+                                    <!-- Tags injected by JS -->
+                                </div>
+                            </div>
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="privacyToggle">
+                                <label class="form-check-label small" for="privacyToggle">Private Profile (Hide stats
+                                    from leaderboard)</label>
+                            </div>
+                            <button id="saveProfileButton" class="btn btn-primary btn-sm w-100">Save Changes</button>
+                        </div> <!-- NOW CLOSING DIV HERE -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
     <div class="eurovision-simulator container-fluid">
         <h1 class="text-center mb-4">YOUR VERY OWN EUROVISION SIMULATOR</h1>
 
@@ -1422,10 +1564,35 @@
             <div class="col-12">
                 <div class="card menu-card">
                     <div class="card-body">
+                        <!-- Auth UI -->
+                        <div id="authSection" class="mb-3 p-2 text-center"
+                            style="display: none; background: rgba(255,255,255,0.1); border-radius: 10px; border: 1px solid var(--card-border);">
+                            <div class="d-flex align-items-center justify-content-center gap-3">
+                                <img id="userAvatar" src="" alt="Avatar" class="rounded-circle"
+                                    style="width: 40px; height: 40px; border: 2px solid #fff;">
+                                <div class="text-start">
+                                    <h6 id="userName" class="mb-0 fw-bold">User</h6>
+                                    <small class="text-success">● Online</small>
+                                </div>
+                                <button id="logoutButton" class="btn btn-sm btn-outline-danger ms-2">Logout</button>
+                                <button id="myProfileButton" class="btn btn-sm btn-outline-primary ms-1">My
+                                    Profile</button>
+                            </div>
+                        </div>
+                        <button id="loginButton" class="btn btn-light mb-2 w-100 fw-bold"
+                            style="color: #444; border: 1px solid #ddd;">
+                            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G"
+                                style="width: 18px; margin-right: 8px;">
+                            Sign in with Google
+                        </button>
+                        <hr class="dropdown-divider mb-3" style="border-top: 1px solid rgba(255,255,255,0.2);">
+
                         <button id="toggleDarkMode" class="btn btn-secondary mb-2">DARK MODE</button>
                         <button id="toggleChristmas" class="btn btn-danger mb-2">🎄 CHRISTMAS MODE</button>
                         <button id="adventCalendarButton" class="btn btn-success mb-2">📅 ADVENT CALENDAR</button>
                         <button id="leaderboardButton" class="btn btn-warning mb-2">🏆 LEADERBOARD</button>
+                        <button id="userLeaderboardButton" class="btn btn-primary mb-2"
+                            style="background: #6f42c1; border-color: #6f42c1;">👤 USER LEADERBOARD</button>
                         <button id="jescVoteButton" class="btn btn-primary mb-2"
                             style="background: linear-gradient(45deg, #FFD700, #FF8C00); border: none; color: black; font-weight: bold;">🏆
                             JESC 2025 WINNER</button>
@@ -1459,7 +1626,7 @@
             <div class="col-md-12">
                 <div class="card settings-card">
                     <div class="card-body">
-                        <h5>V.1.2.6</h5>
+                        <h5>V.1.2.7</h5>
                         <h2>Select Participating Countries and Set Odds<br> (11-50 countries semi-finals starting with
                             27, odds -> lower is better):</h2>
                         <h3 id="selectedCount" style="color: black;">Total Selected Countries: 0/50</h3>
@@ -4826,6 +4993,31 @@
 
                 </div>
                 <!--
+                    Latest version notes: 1.2.7 (by u/alexsemilos)
+                    In this release we added Google Login, User Profiles, and Advanced Customization
+                -->
+                <h6>Version 1.2.7 (by u/alexsemilos) <span class="badge bg-primary">PROFILE SPECIAL!</span></h6>
+                <ul>
+                    <li style="color:blue;"><strong>&lt;NEW FEATURE&gt; Enhanced User Profile:</strong>
+                        <ul>
+                            <li><strong>My Profile Button</strong> - Easily access your profile from the main menu.</li>
+                            <li><strong>Drag & Drop Country Selector</strong> - Choose your Favorite Country from <strong>ALL countries in the world</strong> using a new drag-and-drop interface!</li>
+                            <li><strong>Flags on Profile</strong> - Your favorite country now appears with its official flag on your profile.</li>
+                            <li><strong>📍 Location</strong> - Add your City and Country to show where you are simulating from.</li>
+                            <li><strong>🔗 Social Handle</strong> - Add your social media handle (e.g. @username) to connect with others.</li>
+                            <li><strong>New Tags</strong> - Dozens of new tags added! (e.g., "Wind Machine Enthusiast", "Chaos Agent", "Robbed Queen Support").</li>
+                            <li><strong>Privacy Mode</strong> - Option to make your profile private (hides stats from leaderboard).</li>
+                        </ul>
+                    </li>
+                    <li style="color:blue;"><strong>&lt;NEW FEATURE&gt; Google Login & Leaderboard:</strong>
+                         <ul>
+                            <li><strong>Google Sign-In</strong> - Log in safely.</li>
+                            <li><strong>User Leaderboard</strong> - Compete for most simulations!</li>
+                            <li><strong>Role Badges</strong> - Admin/Dev badges for special users.</li>
+                        </ul>
+                    </li>
+                </ul>
+                <!--
                     Latest version notes: 1.2.6 (by u/alexsemilos)
                     In this release we add JESC 2025 Voting
                 -->
@@ -5557,6 +5749,19 @@
                     }, { merge: true });
 
                     await batch.commit();
+
+                    // 6. Update User Simulation Count (if logged in)
+                    if (firebase.auth().currentUser && db) {
+                        const userRef = db.collection('users').doc(firebase.auth().currentUser.uid);
+                        // We use a separate update to not fail the main batch if user permissions vary, however it's safe to separate.
+                        // Or we could have added it to batch if we are sure of the document path.
+                        // Simply running a separate update is safer for now.
+                        userRef.set({
+                            simulations: firebase.firestore.FieldValue.increment(1),
+                            lastSimulation: new Date().toISOString()
+                        }, { merge: true }).catch(err => console.error("Error updating user stats:", err));
+                    }
+
                     console.log(`🏆 Recorded detailed stats to Firebase`);
                 } catch (error) {
                     console.error('Error recording win:', error);
@@ -5730,9 +5935,146 @@
 
             // Leaderboard button click handler
             document.getElementById('leaderboardButton').addEventListener('click', showLeaderboard);
+            document.getElementById('userLeaderboardButton').addEventListener('click', showUserLeaderboard);
 
             // Make recordSimulationWin available globally for integration
             window.recordSimulationWin = recordSimulationWin;
+
+            // ===== USER LEADERBOARD =====
+            async function showUserLeaderboard() {
+                const loadingHTML = `
+                <div class="modal fade" id="userLeaderboardModal" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header leaderboard-header" style="background: linear-gradient(135deg, #6f42c1 0%, #4b0082 100%);">
+                                <h5 class="modal-title">👤 User Leaderboard</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="leaderboard-tabs">
+                                <button class="leaderboard-tab active">🤖 Most Simulations</button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="leaderboard-loading">
+                                    <div class="spinner"></div>
+                                    <p>Loading user rankings...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+
+                const existingModal = document.getElementById('userLeaderboardModal');
+                if (existingModal) existingModal.remove();
+                document.body.insertAdjacentHTML('beforeend', loadingHTML);
+                const modal = new bootstrap.Modal(document.getElementById('userLeaderboardModal'));
+                modal.show();
+
+                // Fetch Data
+                let users = [];
+                if (firebaseEnabled && db) {
+                    try {
+                        // Check if user is logged in (permission check)
+                        if (!firebase.auth().currentUser) {
+                            document.querySelector('#userLeaderboardModal .modal-body').innerHTML = `
+                                <div class="alert alert-warning text-center m-4">
+                                    <h5>🔒 Login Required</h5>
+                                    <p>You must be logged in to view the User Leaderboard.</p>
+                                </div>`;
+                            return;
+                        }
+
+                        const snapshot = await db.collection('users')
+                            .orderBy('simulations', 'desc')
+                            .limit(50)
+                            .get();
+
+                        snapshot.forEach(doc => {
+                            const data = doc.data();
+                            if (data.nickname) {
+                                users.push({
+                                    nickname: data.nickname,
+                                    simulations: data.simulations || 0,
+                                    role: data.role || null,
+                                    uid: doc.id, // Store UID for click event
+                                    isPrivate: data.isPrivate || false
+                                });
+                            }
+                        });
+                    } catch (error) {
+                        console.error("Error fetching user leaderboard:", error);
+                        document.querySelector('#userLeaderboardModal .modal-body').innerHTML = `
+                                <div class="alert alert-danger text-center m-4">
+                                    <p>Error loading leaderboard. Ensure you are logged in.</p>
+                                </div>`;
+                        return;
+                    }
+                } else {
+                    // Demo Data
+                    users = [
+                        { nickname: "EuroFan2025", simulations: 154 },
+                        { nickname: "SimMaster", simulations: 120 },
+                        { nickname: "SongContestLover", simulations: 98 },
+                        { nickname: "JuryMember1", simulations: 85 },
+                        { nickname: "TelevoteKing", simulations: 42 }
+                    ];
+                }
+
+                renderUserLeaderboardTable(users);
+            }
+
+            function renderUserLeaderboardTable(users) {
+                let tableRows = '';
+                users.forEach((user, index) => {
+                    let rankClass = '';
+                    let rankDisplay = index + 1;
+                    if (index === 0) { rankClass = 'gold'; rankDisplay = '🥇'; }
+                    else if (index === 1) { rankClass = 'silver'; rankDisplay = '🥈'; }
+                    else if (index === 2) { rankClass = 'bronze'; rankDisplay = '🥉'; }
+
+                    let badgeHtml = '';
+                    if (user.role === 'admin') {
+                        badgeHtml = '<span class="badge-role badge-admin">ADMIN</span>';
+                    } else if (user.role === 'dev') {
+                        badgeHtml = '<span class="badge-role badge-dev">DEV</span>';
+                    }
+
+                    tableRows += `
+                        <tr style="cursor: pointer;" onclick="openProfileModal('${user.uid}')">
+                            <td class="leaderboard-rank ${rankClass}">${rankDisplay}</td>
+                            <td style="font-weight: bold;">
+                                ${user.nickname} ${badgeHtml} ${user.isPrivate ? '🔒' : ''}
+                            </td>
+                            <td style="font-weight: bold; color: #6f42c1;">${user.isPrivate ? '-' : user.simulations}</td>
+                        </tr>
+                    `;
+                });
+
+                const content = `
+                   <div class="leaderboard-stats" style="background: linear-gradient(135deg, #4b0082 0%, #6f42c1 100%);">
+                        <div class="leaderboard-stat-card">
+                            <div class="stat-value">${users.length}</div>
+                            <div class="stat-label">👤 Ranked Users</div>
+                        </div>
+                   </div>
+                   <div style="max-height: 400px; overflow-y: auto; margin-top: 15px;">
+                        <table class="leaderboard-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 60px;">Rank</th>
+                                    <th>Nickname</th>
+                                    <th style="width: 150px;">Total Simulations</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${tableRows}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+
+                const tableContainer = document.querySelector('#userLeaderboardModal .modal-body');
+                if (tableContainer) tableContainer.innerHTML = content;
+            }
 
             // ===== JESC 2025 VOTING SYSTEM =====
             const jesc2025Participants = [
@@ -5922,6 +6264,483 @@
                 // Reload to show results
                 await loadJescData(type);
             }
+
+            const ESC_COUNTRIES = [
+                // Europe
+                { name: "Albania", code: "al" }, { name: "Andorra", code: "ad" }, { name: "Armenia", code: "am" },
+                { name: "Austria", code: "at" }, { name: "Azerbaijan", code: "az" }, { name: "Belarus", code: "by" },
+                { name: "Belgium", code: "be" }, { name: "Bosnia & Herzegovina", code: "ba" }, { name: "Bulgaria", code: "bg" },
+                { name: "Croatia", code: "hr" }, { name: "Cyprus", code: "cy" }, { name: "Czechia", code: "cz" },
+                { name: "Denmark", code: "dk" }, { name: "Estonia", code: "ee" }, { name: "Finland", code: "fi" },
+                { name: "France", code: "fr" }, { name: "Georgia", code: "ge" }, { name: "Germany", code: "de" },
+                { name: "Greece", code: "gr" }, { name: "Hungary", code: "hu" }, { name: "Iceland", code: "is" },
+                { name: "Ireland", code: "ie" }, { name: "Italy", code: "it" }, { name: "Kazakhstan", code: "kz" },
+                { name: "Kosovo", code: "xk" }, { name: "Latvia", code: "lv" }, { name: "Liechtenstein", code: "li" },
+                { name: "Lithuania", code: "lt" }, { name: "Luxembourg", code: "lu" }, { name: "Malta", code: "mt" },
+                { name: "Moldova", code: "md" }, { name: "Monaco", code: "mc" }, { name: "Montenegro", code: "me" },
+                { name: "Netherlands", code: "nl" }, { name: "North Macedonia", code: "mk" }, { name: "Norway", code: "no" },
+                { name: "Poland", code: "pl" }, { name: "Portugal", code: "pt" }, { name: "Romania", code: "ro" },
+                { name: "Russia", code: "ru" }, { name: "San Marino", code: "sm" }, { name: "Serbia", code: "rs" },
+                { name: "Slovakia", code: "sk" }, { name: "Slovenia", code: "si" }, { name: "Spain", code: "es" },
+                { name: "Sweden", code: "se" }, { name: "Switzerland", code: "ch" }, { name: "Turkey", code: "tr" },
+                { name: "Ukraine", code: "ua" }, { name: "United Kingdom", code: "gb" }, { name: "Vatican City", code: "va" },
+
+                // Americas
+                { name: "Antigua & Barbuda", code: "ag" }, { name: "Argentina", code: "ar" }, { name: "Bahamas", code: "bs" },
+                { name: "Barbados", code: "bb" }, { name: "Belize", code: "bz" }, { name: "Bolivia", code: "bo" },
+                { name: "Brazil", code: "br" }, { name: "Canada", code: "ca" }, { name: "Chile", code: "cl" },
+                { name: "Colombia", code: "co" }, { name: "Costa Rica", code: "cr" }, { name: "Cuba", code: "cu" },
+                { name: "Dominica", code: "dm" }, { name: "Dominican Republic", code: "do" }, { name: "Ecuador", code: "ec" },
+                { name: "El Salvador", code: "sv" }, { name: "Grenada", code: "gd" }, { name: "Guatemala", code: "gt" },
+                { name: "Guyana", code: "gy" }, { name: "Haiti", code: "ht" }, { name: "Honduras", code: "hn" },
+                { name: "Jamaica", code: "jm" }, { name: "Mexico", code: "mx" }, { name: "Nicaragua", code: "ni" },
+                { name: "Panama", code: "pa" }, { name: "Paraguay", code: "py" }, { name: "Peru", code: "pe" },
+                { name: "Saint Kitts & Nevis", code: "kn" }, { name: "Saint Lucia", code: "lc" }, { name: "Saint Vincent", code: "vc" },
+                { name: "Suriname", code: "sr" }, { name: "Trinidad & Tobago", code: "tt" }, { name: "United States", code: "us" },
+                { name: "Uruguay", code: "uy" }, { name: "Venezuela", code: "ve" },
+
+                // Asia & Oceania
+                { name: "Afghanistan", code: "af" }, { name: "Australia", code: "au" }, { name: "Bangladesh", code: "bd" },
+                { name: "Bhutan", code: "bt" }, { name: "Brunei", code: "bn" }, { name: "Cambodia", code: "kh" },
+                { name: "China", code: "cn" }, { name: "East Timor", code: "tl" }, { name: "Fiji", code: "fj" },
+                { name: "India", code: "in" }, { name: "Indonesia", code: "id" }, { name: "Iran", code: "ir" },
+                { name: "Iraq", code: "iq" }, { name: "Israel", code: "il" }, { name: "Japan", code: "jp" },
+                { name: "Jordan", code: "jo" }, { name: "Kiribati", code: "ki" }, { name: "Kuwait", code: "kw" },
+                { name: "Kyrgyzstan", code: "kg" }, { name: "Laos", code: "la" }, { name: "Lebanon", code: "lb" },
+                { name: "Malaysia", code: "my" }, { name: "Maldives", code: "mv" }, { name: "Marshall Islands", code: "mh" },
+                { name: "Micronesia", code: "fm" }, { name: "Mongolia", code: "mn" }, { name: "Myanmar", code: "mm" },
+                { name: "Nauru", code: "nr" }, { name: "Nepal", code: "np" }, { name: "New Zealand", code: "nz" },
+                { name: "North Korea", code: "kp" }, { name: "Oman", code: "om" }, { name: "Pakistan", code: "pk" },
+                { name: "Palau", code: "pw" }, { name: "Palestine", code: "ps" }, { name: "Papua New Guinea", code: "pg" },
+                { name: "Philippines", code: "ph" }, { name: "Qatar", code: "qa" }, { name: "Samoa", code: "ws" },
+                { name: "Saudi Arabia", code: "sa" }, { name: "Singapore", code: "sg" }, { name: "Solomon Islands", code: "sb" },
+                { name: "South Korea", code: "kr" }, { name: "Sri Lanka", code: "lk" }, { name: "Syria", code: "sy" },
+                { name: "Taiwan", code: "tw" }, { name: "Tajikistan", code: "tj" }, { name: "Thailand", code: "th" },
+                { name: "Tonga", code: "to" }, { name: "Turkmenistan", code: "tm" }, { name: "Tuvalu", code: "tv" },
+                { name: "UAE", code: "ae" }, { name: "Uzbekistan", code: "uz" }, { name: "Vanuatu", code: "vu" },
+                { name: "Vietnam", code: "vn" }, { name: "Yemen", code: "ye" },
+
+                // Africa
+                { name: "Algeria", code: "dz" }, { name: "Angola", code: "ao" }, { name: "Benin", code: "bj" },
+                { name: "Botswana", code: "bw" }, { name: "Burkina Faso", code: "bf" }, { name: "Burundi", code: "bi" },
+                { name: "Cabo Verde", code: "cv" }, { name: "Cameroon", code: "cm" }, { name: "CAR", code: "cf" },
+                { name: "Chad", code: "td" }, { name: "Comoros", code: "km" }, { name: "Congo (DRC)", code: "cd" },
+                { name: "Congo (Republic)", code: "cg" }, { name: "Cote d'Ivoire", code: "ci" }, { name: "Djibouti", code: "dj" },
+                { name: "Egypt", code: "eg" }, { name: "Equatorial Guinea", code: "gq" }, { name: "Eritrea", code: "er" },
+                { name: "Eswatini", code: "sz" }, { name: "Ethiopia", code: "et" }, { name: "Gabon", code: "ga" },
+                { name: "Gambia", code: "gm" }, { name: "Ghana", code: "gh" }, { name: "Guinea", code: "gn" },
+                { name: "Guinea-Bissau", code: "gw" }, { name: "Kenya", code: "ke" }, { name: "Lesotho", code: "ls" },
+                { name: "Liberia", code: "lr" }, { name: "Libya", code: "ly" }, { name: "Madagascar", code: "mg" },
+                { name: "Malawi", code: "mw" }, { name: "Mali", code: "ml" }, { name: "Mauritania", code: "mr" },
+                { name: "Mauritius", code: "mu" }, { name: "Morocco", code: "ma" }, { name: "Mozambique", code: "mz" },
+                { name: "Namibia", code: "na" }, { name: "Niger", code: "ne" }, { name: "Nigeria", code: "ng" },
+                { name: "Rwanda", code: "rw" }, { name: "Sao Tome & Principe", code: "st" }, { name: "Senegal", code: "sn" },
+                { name: "Seychelles", code: "sc" }, { name: "Sierra Leone", code: "sl" }, { name: "Somalia", code: "so" },
+                { name: "South Africa", code: "za" }, { name: "South Sudan", code: "ss" }, { name: "Sudan", code: "sd" },
+                { name: "Tanzania", code: "tz" }, { name: "Togo", code: "tg" }, { name: "Tunisia", code: "tn" },
+                { name: "Uganda", code: "ug" }, { name: "Zambia", code: "zm" }, { name: "Zimbabwe", code: "zw" }
+            ];
+
+            const AVAILABLE_TAGS = [
+                // General
+                "Eurofan", "Statistician", "Casual", "Predictor", "Sim Addict",
+                // Roles
+                "Jury Member", "Televoter", "Artist", "Historian", "Composer", "Commentator", "Journalist",
+                // Specific Interests
+                "JESC Fan", "NF Watcher", "San Remo Enjoyer", "Melodifestivalen Fan", "Chart Maker",
+                "Winner Predictor", "Underdog Fan", "Big 5 Hater", "Big 5 Lover",
+                // Fun / Personality
+                "Flag Nerd", "Map Lover", "Ballad Lover", "Bop Enjoyer", "Ethno-Bop Fan",
+                "Rock Fan", "Joke Entry Stan", "Robbed Queen Support", "Null Points Fear",
+                "Dark Horse Hunter", "Live Show Purist", "Studio Cut Only", "Postcard Critic",
+                "Stage Design Nerd", "Green Room Stalker", "Wind Machine Enthusiast",
+                "Key Change Spotter", "Pyrotechnics Fan", "Chaos Agent", "Peace & Love",
+                "Old School (Pre-2000)", "New School (Post-2010)", "Golden Era (2000s)",
+                "Recap Watcher", "Iceberg Explorer", "Reaction Video Addict"
+            ];
+
+            async function openProfileModal(targetUid) {
+                const modalEl = document.getElementById('profileModal');
+                const modal = new bootstrap.Modal(modalEl);
+                modal.show();
+
+                const loading = document.getElementById('profileLoading');
+                const content = document.getElementById('profileContent');
+                const editControls = document.getElementById('editProfileControls');
+
+                loading.style.display = 'block';
+                content.style.display = 'none';
+                loading.style.display = 'block';
+                content.style.display = 'none';
+                editControls.style.display = 'none'; // Ensure hidden by default
+
+                const currentUser = firebase.auth().currentUser;
+                const isOwner = currentUser && currentUser.uid === targetUid;
+
+                if (firebaseEnabled && db) {
+                    try {
+                        const doc = await db.collection('users').doc(targetUid).get();
+                        if (!doc.exists) {
+                            alert("User not found");
+                            modal.hide();
+                            return;
+                        }
+                        const data = doc.data();
+                        const isPrivate = data.isPrivate && !isOwner;
+
+                        // Populate View
+                        document.getElementById('profileNickname').textContent = data.nickname || "Unknown";
+                        document.getElementById('profileImage').src = data.avatarUrl || data.photoURL || 'https://placehold.co/100';
+                        document.getElementById('profileBio').textContent = data.bio || (isOwner ? "No bio yet." : "");
+
+                        // New Fields Display
+                        // New Fields Display
+                        const favCountryName = data.favCountry || "";
+                        const favCountryCode = data.favCountryCode || ""; // Backward compatibility attempt?
+
+                        // Try to find code if missing
+                        let displayCode = favCountryCode;
+                        if (!displayCode && favCountryName) {
+                            const found = ESC_COUNTRIES.find(c => c.name === favCountryName);
+                            if (found) displayCode = found.code;
+                        }
+
+                        const social = data.social || "";
+                        const location = data.location || "";
+                        let extraInfoHtml = "";
+                        if (favCountryName && displayCode) {
+                            extraInfoHtml += `<span class="badge bg-light text-dark border me-1"><span class="flag-icon flag-icon-${displayCode}"></span> ${favCountryName}</span>`;
+                        } else if (favCountryName) {
+                            extraInfoHtml += `<span class="badge bg-danger me-1">❤️ ${favCountryName}</span>`;
+                        }
+
+                        if (location) extraInfoHtml += `<span class="badge bg-warning text-dark me-1">📍 ${location}</span>`;
+                        if (social) extraInfoHtml += `<span class="badge bg-info text-dark">🔗 ${social}</span>`;
+
+                        // Insert extra info after bio
+                        const existingExtra = document.getElementById('profileExtraInfo');
+                        if (existingExtra) existingExtra.remove();
+                        if (extraInfoHtml) {
+                            document.getElementById('profileBio').insertAdjacentHTML('afterend', `<div id="profileExtraInfo" class="mb-2">${extraInfoHtml}</div>`);
+                        }
+
+
+
+                        document.getElementById('profileSimulations').textContent = isPrivate ? "🔒" : (data.simulations || 0);
+                        document.getElementById('profileJoinDate').textContent = data.createdAt ? new Date(data.createdAt.toDate()).toLocaleDateString() : "-";
+
+                        // Badges
+                        let badgesHtml = '';
+                        if (data.role === 'admin') badgesHtml += '<span class="badge-role badge-admin">ADMIN</span>';
+                        if (data.role === 'dev') badgesHtml += '<span class="badge-role badge-dev">DEV</span>';
+                        document.getElementById('profileBadges').innerHTML = badgesHtml;
+
+                        // Tags
+                        const tagsContainer = document.getElementById('profileTags');
+                        tagsContainer.innerHTML = '';
+                        if (data.tags && Array.isArray(data.tags)) {
+                            data.tags.forEach(tag => {
+                                tagsContainer.innerHTML += `<span class="badge bg-secondary rounded-pill">${tag}</span>`;
+                            });
+                        }
+
+                        // Owner Logic
+                        if (isOwner) {
+                            editControls.style.display = 'block';
+                            document.getElementById('editAvatarUrl').value = data.avatarUrl || "";
+                            document.getElementById('editBio').value = data.bio || "";
+                            document.getElementById('editLocation').value = data.location || "";
+                            document.getElementById('editSocial').value = data.social || "";
+                            document.getElementById('privacyToggle').checked = data.isPrivate || false;
+
+                            // Init Country Drag & Drop
+                            initCountryDragDrop(data.favCountry, data.favCountryCode);
+
+                            // Render Tag Selection
+                            const editTagsContainer = document.getElementById('editTagsContainer');
+                            editTagsContainer.innerHTML = '';
+                            AVAILABLE_TAGS.forEach(tag => {
+                                const isSelected = data.tags && data.tags.includes(tag);
+                                const btnClass = isSelected ? 'btn-primary' : 'btn-outline-secondary';
+                                editTagsContainer.innerHTML += `
+                                    <button class="btn btn-sm ${btnClass} tag-select-btn" data-tag="${tag}" onclick="toggleTag(this)">${tag}</button>
+                                `;
+                            });
+
+                            // Save Handler
+                            document.getElementById('saveProfileButton').onclick = async () => {
+                                const newAvatar = document.getElementById('editAvatarUrl').value.trim();
+                                const newBio = document.getElementById('editBio').value.trim();
+                                const newFavCountryName = document.getElementById('editFavCountryName').value;
+                                const newFavCountryCode = document.getElementById('editFavCountryCode').value;
+                                const newLocation = document.getElementById('editLocation').value.trim();
+                                const newSocial = document.getElementById('editSocial').value.trim();
+                                const isPrivate = document.getElementById('privacyToggle').checked;
+
+                                // Collect tags
+                                const selectedTags = [];
+                                document.querySelectorAll('.tag-select-btn.btn-primary').forEach(btn => selectedTags.push(btn.dataset.tag));
+
+                                try {
+                                    await db.collection('users').doc(currentUser.uid).update({
+                                        avatarUrl: newAvatar,
+                                        bio: newBio,
+                                        favCountry: newFavCountryName,
+                                        favCountryCode: newFavCountryCode,
+                                        location: newLocation,
+                                        social: newSocial,
+                                        isPrivate: isPrivate,
+                                        tags: selectedTags
+                                    });
+                                    modal.hide();
+                                    modal.hide();
+                                    const leaderboardModal = document.getElementById('userLeaderboardModal');
+                                    if (leaderboardModal && leaderboardModal.classList.contains('show')) {
+                                        // Ideally we would refresh here, but for now just saving is enough.
+                                        // The user can close/re-open leaderboard to see changes.
+                                    }
+                                } catch (e) {
+                                    console.error(e);
+                                    alert("Error saving profile");
+                                }
+                            };
+                        } else {
+                            if (isPrivate) {
+                                document.getElementById('profileBio').textContent = "This profile is private.";
+                                document.getElementById('profileTags').innerHTML = '';
+                            }
+                        }
+
+                        loading.style.display = 'none';
+                        content.style.display = 'block';
+
+                    } catch (e) {
+                        console.error(e);
+                        alert("Error loading profile");
+                        modal.hide();
+                    }
+                }
+            }
+
+            window.toggleTag = function (btn) {
+                btn.classList.toggle('btn-primary');
+                btn.classList.toggle('btn-outline-secondary');
+            };
+
+            // Drag & Drop Logic for Countries
+            function initCountryDragDrop(currentName, currentCode) {
+                const sourceContainer = document.getElementById('favCountrySource');
+                const dropZone = document.getElementById('favCountryDropZone');
+                const hiddenName = document.getElementById('editFavCountryName');
+                const hiddenCode = document.getElementById('editFavCountryCode');
+
+                window.resetDropZone = function () {
+                    document.getElementById('editFavCountryName').value = "";
+                    document.getElementById('editFavCountryCode').value = "";
+                    document.getElementById('favCountryDropZone').innerHTML = '<span class="text-muted small">Drag your favorite country here</span>';
+                };
+
+                // 1. Populate Source
+                sourceContainer.innerHTML = '';
+                ESC_COUNTRIES.forEach(c => {
+                    const el = document.createElement('div');
+                    el.className = 'country-draggable badge bg-light text-dark border';
+                    el.style.cursor = 'grab';
+                    el.style.userSelect = 'none';
+                    el.draggable = true;
+                    el.dataset.code = c.code;
+                    el.dataset.name = c.name;
+                    el.innerHTML = `<span class="flag-icon flag-icon-${c.code}"></span> ${c.name}`;
+
+                    el.addEventListener('dragstart', (e) => {
+                        e.dataTransfer.setData('text/plain', JSON.stringify({ name: c.name, code: c.code }));
+                        el.style.opacity = '0.5';
+                    });
+                    el.addEventListener('dragend', () => {
+                        el.style.opacity = '1';
+                    });
+
+                    // Click to select fallback
+                    el.addEventListener('click', () => {
+                        setFavoriteCountry(c.name, c.code);
+                    });
+
+                    sourceContainer.appendChild(el);
+                });
+
+                // 2. Drop Zone Events
+                dropZone.addEventListener('dragover', (e) => {
+                    e.preventDefault(); // Allow drop
+                    dropZone.style.background = '#e9ecef';
+                });
+                dropZone.addEventListener('dragleave', () => {
+                    dropZone.style.background = '#f8f9fa';
+                });
+                dropZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    dropZone.style.background = '#f8f9fa';
+                    const data = e.dataTransfer.getData('text/plain');
+                    if (data) {
+                        try {
+                            const parsed = JSON.parse(data);
+                            setFavoriteCountry(parsed.name, parsed.code);
+                        } catch (err) { console.error(err); }
+                    }
+                });
+
+                function setFavoriteCountry(name, code) {
+                    hiddenName.value = name;
+                    hiddenCode.value = code;
+                    dropZone.innerHTML = `
+                        <div class="badge bg-primary fs-6 p-2">
+                             <span class="flag-icon flag-icon-${code}"></span> ${name} 
+                             <span class="ms-2" style="cursor:pointer; opacity:0.7;" onclick="event.stopPropagation(); resetDropZone();">×</span>
+                        </div>
+                    `;
+                }
+
+                // 3. Set Initial
+                if (currentName) {
+                    // Try to find code if missing
+                    let code = currentCode;
+                    if (!code) {
+                        const found = ESC_COUNTRIES.find(c => c.name === currentName);
+                        if (found) code = found.code;
+                    }
+                    if (code) setFavoriteCountry(currentName, code);
+                } else {
+                    resetDropZone();
+                }
+            }
+
+            window.filterCountries = function () {
+                const term = document.getElementById('favCountrySearch').value.toLowerCase();
+                const items = document.querySelectorAll('.country-draggable');
+                items.forEach(item => {
+                    const name = item.dataset.name.toLowerCase();
+                    if (name.includes(term)) item.style.display = 'inline-block';
+                    else item.style.display = 'none';
+                });
+            };
+
+        </script>
+        <script>
+            // Authentication Logic
+            document.addEventListener('DOMContentLoaded', () => {
+                const auth = firebase.auth();
+                const provider = new firebase.auth.GoogleAuthProvider();
+
+                const loginBtn = document.getElementById('loginButton');
+                const logoutBtn = document.getElementById('logoutButton');
+                const authSection = document.getElementById('authSection');
+                const userAvatar = document.getElementById('userAvatar');
+                const userName = document.getElementById('userName');
+
+                // Login
+                loginBtn.addEventListener('click', () => {
+                    if (!firebaseEnabled) {
+                        alert("Firebase is not initialized. Cannot log in.");
+                        return;
+                    }
+                    auth.signInWithPopup(provider)
+                        .then((result) => {
+                            console.log("User logged in:", result.user);
+                            // Optional: Store user in DB if needed later
+                        }).catch((error) => {
+                            console.error("Login failed:", error);
+                            alert("Login failed: " + error.message);
+                        });
+                });
+
+                // Logout
+                logoutBtn.addEventListener('click', () => {
+                    auth.signOut().then(() => {
+                        console.log("User logged out");
+                        // Clear session storage if any
+                    }).catch((error) => {
+                        console.error("Logout failed:", error);
+                    });
+                });
+
+                // State Observer
+
+                // Add listener for My Profile
+                document.getElementById('myProfileButton').addEventListener('click', () => {
+                    const user = firebase.auth().currentUser;
+                    if (user) openProfileModal(user.uid);
+                });
+
+                auth.onAuthStateChanged(async (user) => {
+                    if (user) {
+                        loginBtn.style.display = 'none';
+
+                        // Check if user has a nickname in Firestore
+                        if (firebaseEnabled && db) {
+                            const userRef = db.collection('users').doc(user.uid);
+                            try {
+                                const doc = await userRef.get();
+                                if (doc.exists && doc.data().nickname) {
+                                    // User has a nickname, show UI
+                                    const nickname = doc.data().nickname;
+                                    userAvatar.src = user.photoURL || 'https://via.placeholder.com/40';
+                                    userName.textContent = nickname; // Show Nickname ONLY
+
+                                    authSection.style.display = 'block';
+                                    authSection.classList.add('fade-in');
+                                } else {
+                                    // No nickname, show modal
+                                    const nicknameModal = new bootstrap.Modal(document.getElementById('nicknameModal'));
+                                    nicknameModal.show();
+
+                                    // Handle Save
+                                    document.getElementById('saveNicknameButton').onclick = async () => {
+                                        const input = document.getElementById('nicknameInput');
+                                        const nick = input.value.trim();
+                                        const errDiv = document.getElementById('nicknameError');
+
+                                        if (nick.length < 3) {
+                                            errDiv.textContent = "Nickname must be at least 3 characters.";
+                                            return;
+                                        }
+
+                                        // Save to Firestore
+                                        try {
+                                            await userRef.set({
+                                                nickname: nick,
+                                                email: user.email, // Store email privately for admin reference if needed
+                                                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                                            }, { merge: true });
+
+                                            nicknameModal.hide();
+
+                                            // Update UI
+                                            userAvatar.src = user.photoURL || 'https://via.placeholder.com/40';
+                                            userName.textContent = nick;
+                                            authSection.style.display = 'block';
+                                        } catch (err) {
+                                            console.error("Error saving nickname:", err);
+                                            errDiv.textContent = "Error saving. Please try again.";
+                                        }
+                                    };
+                                }
+                            } catch (error) {
+                                console.error("Error fetching user data:", error);
+                            }
+                        } else {
+                            // Fallback if DB is not ready (shouldn't happen often)
+                            console.warn("DB not ready, using Display Name temporary");
+                            authSection.style.display = 'block';
+                            userName.textContent = user.displayName;
+                        }
+
+                    } else {
+                        loginBtn.style.display = 'block';
+                        authSection.style.display = 'none';
+                        userAvatar.src = '';
+                        userName.textContent = '';
+                    }
+                });
+            });
         </script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
 </body>
