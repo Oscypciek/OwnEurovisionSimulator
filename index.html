@@ -7,6 +7,8 @@
     <title>Eurovision Song Contest Simulator with Semi-Finals and Dynamic Voting</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
             --main-background: linear-gradient(135deg, #1e5799 0%, #2989d8 50%, #207cca 51%, #7db9e8 100%);
@@ -180,7 +182,8 @@
         }
 
         .menu-card .btn {
-            margin-bottom: 10px;
+            margin-bottom: 8px;
+            margin-right: 4px;
             font-weight: bold;
             transition: all 0.3s ease;
         }
@@ -188,6 +191,126 @@
         .menu-card .btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 8px var(--button-hover-shadow);
+        }
+
+        .menu-card .btn i {
+            margin-right: 6px;
+        }
+
+        /* Menu sections: clear visual hierarchy with grouping */
+        .menu-section {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 4px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        .menu-section:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .menu-section:first-child {
+            padding-top: 0;
+        }
+
+        .menu-section-title {
+            display: inline-flex;
+            align-items: center;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.08em;
+            color: var(--settings-h2-color);
+            margin: 0 10px 0 0;
+            font-weight: 700;
+            min-width: 130px;
+        }
+
+        .menu-section-title i {
+            margin-right: 6px;
+            font-size: 1rem;
+        }
+
+        .menu-utilities {
+            display: flex;
+            justify-content: flex-end;
+            gap: 6px;
+            padding: 4px 0 12px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        .menu-utilities .btn {
+            margin-bottom: 0;
+        }
+
+        /* Hero "GENERATE" button: it's the primary action, make it pop */
+        .menu-btn-hero {
+            padding: 12px 20px !important;
+            font-size: 1.1rem !important;
+            letter-spacing: 0.05em;
+            background: linear-gradient(135deg, #2989d8 0%, #FFD700 100%) !important;
+            border: none !important;
+            color: #fff !important;
+            box-shadow: 0 4px 14px rgba(255, 215, 0, 0.35);
+            flex-grow: 1;
+        }
+
+        .menu-btn-hero:hover {
+            background: linear-gradient(135deg, #207cca 0%, #ffcc00 100%) !important;
+            box-shadow: 0 6px 18px rgba(255, 215, 0, 0.5);
+        }
+
+        /* Status badge for #selectedCount: color changes based on country count */
+        #selectedCount {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 999px;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background 0.3s ease, color 0.3s ease;
+            margin: 6px 0 12px 0;
+            color: #555 !important;
+            background: #ececec;
+        }
+
+        #selectedCount.status-empty {
+            background: #f0f0f0;
+            color: #888 !important;
+        }
+
+        #selectedCount.status-low {
+            background: #fff4d4;
+            color: #b97a00 !important;
+        }
+
+        #selectedCount.status-ok {
+            background: #d6f4dc;
+            color: #1f7a3f !important;
+        }
+
+        #selectedCount.status-perfect {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #5b3500 !important;
+            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
+        }
+
+        #selectedCount.status-over {
+            background: #ffd6d6;
+            color: #b30000 !important;
+        }
+
+        /* On smaller screens, drop the section title to its own line */
+        @media (max-width: 768px) {
+            .menu-section-title {
+                min-width: 100%;
+                margin-bottom: 6px;
+            }
+
+            .menu-utilities {
+                justify-content: flex-start;
+            }
         }
 
         .settings-card h2 {
@@ -789,27 +912,56 @@
             <div class="col-12">
                 <div class="card menu-card">
                     <div class="card-body">
-                        <button id="toggleDarkMode" class="btn btn-secondary mb-2">DARK MODE</button>
 
-                        <button id="instructionsButton" class="btn btn-info mb-2">INSTRUCTIONS</button>
-                        <button id="whatsNewButton" class="btn btn-warning mb-2">WHAT'S NEW?</button>
-                        <button id="generateButton" class="btn btn-warning mb-2">GENERATE</button>
-                        <button id="semiFinal1Button" class="btn btn-secondary mb-2" disabled>1ST SEMI CHART</button>
-                        <button id="semiFinal2Button" class="btn btn-secondary mb-2" disabled>2ND SEMI CHART</button>
-                        <button id="finaleButton" class="btn btn-info mb-2" disabled>FINALE CHART</button>
-                        <h5> Simulate here: </h5>
-                        <button id="simulateSemiDrawButton" class="btn btn-primary mb-2" disabled>SIMULATE SEMI-FINALE
-                            DRAW</button>
-                        <button id="simulateButton" class="btn btn-secondary mb-2" disabled>SIMULATE
-                            SEMI-FINALE</button>
-                        <button id="dynamicVotingButton" class="btn btn-success mb-2" disabled>DYNAMIC FINALE
-                            VOTING</button>
-                        <button id="dynamicESCVotingButton" class="btn btn-success mb-2" disabled>DYNAMIC ESC
-                            VOTING</button>
-                        <button id="resetButton" class="btn btn-danger mb-2">RESET CURRENT SIMULATION</button>
-                        <button id="saveScenarioButton" class="btn btn-success mb-2">SAVE SCENARIO</button>
-                        <button id="loadScenarioButton" class="btn btn-info mb-2">LOAD SCENARIO</button>
-                        <input type="file" id="loadScenarioInput" style="display: none;" accept=".json">
+                        <!-- Top utilities row: help / theme -->
+                        <div class="menu-utilities">
+                            <button id="instructionsButton" class="btn btn-outline-info btn-sm" title="How does this simulator work?"><i class="bi bi-question-circle"></i>Help</button>
+                            <button id="whatsNewButton" class="btn btn-outline-warning btn-sm" title="See what's new in the latest version"><i class="bi bi-megaphone-fill"></i>What's new</button>
+                            <button id="toggleDarkMode" class="btn btn-outline-secondary btn-sm" title="Toggle light/dark theme"><i class="bi bi-moon-stars-fill"></i>Dark mode</button>
+                        </div>
+
+                        <!-- Run simulation: hero action -->
+                        <div class="menu-section">
+                            <span class="menu-section-title"><i class="bi bi-lightning-charge-fill"></i>Run</span>
+                            <button id="generateButton" class="btn menu-btn-hero" title="Run the contest with the current settings"><i class="bi bi-play-fill"></i>GENERATE</button>
+                            <button id="resetButton" class="btn btn-outline-danger" title="Clear current results and re-enable the settings panel"><i class="bi bi-arrow-counterclockwise"></i>Reset</button>
+                        </div>
+
+                        <!-- View static results -->
+                        <div class="menu-section">
+                            <span class="menu-section-title"><i class="bi bi-bar-chart-line-fill"></i>View Results</span>
+                            <button id="finaleButton" class="btn btn-success" disabled title="Show the Grand Final results table and charts"><i class="bi bi-trophy-fill"></i>Final</button>
+                            <button id="semiFinal1Button" class="btn btn-info" disabled title="Show Semi-Final 1 results and charts"><i class="bi bi-1-circle-fill"></i>Semi 1</button>
+                            <button id="semiFinal2Button" class="btn btn-info" disabled title="Show Semi-Final 2 results and charts"><i class="bi bi-2-circle-fill"></i>Semi 2</button>
+                        </div>
+
+                        <!-- Live simulation -->
+                        <div class="menu-section">
+                            <span class="menu-section-title"><i class="bi bi-broadcast"></i>Live Simulation</span>
+                            <button id="simulateSemiDrawButton" class="btn btn-primary" disabled title="Animate the semi-final allocation draw"><i class="bi bi-shuffle"></i>Semi Draw</button>
+                            <button id="simulateButton" class="btn btn-secondary" disabled title="Animate the live televoting reveal of a semi-final"><i class="bi bi-tv-fill"></i>Semi-Final</button>
+                            <button id="dynamicVotingButton" class="btn btn-warning" disabled title="Run the interactive Grand Final reveal (jury, then televoting)"><i class="bi bi-mic-fill"></i>Final Voting</button>
+                            <button id="dynamicESCVotingButton" class="btn btn-warning" disabled title="Full ESC-style voting reveal (semis + final)"><i class="bi bi-music-note-beamed"></i>ESC Voting</button>
+                        </div>
+
+                        <!-- Scenarios save/load -->
+                        <div class="menu-section">
+                            <span class="menu-section-title"><i class="bi bi-folder2"></i>Scenarios</span>
+                            <button id="saveScenarioButton" class="btn btn-success" title="Download the current setup as a JSON scenario file"><i class="bi bi-floppy-fill"></i>Save</button>
+                            <button id="loadScenarioButton" class="btn btn-info" title="Load a scenario from a previously saved JSON file"><i class="bi bi-folder2-open"></i>Load</button>
+                            <input type="file" id="loadScenarioInput" style="display: none;" accept=".json">
+                        </div>
+
+                        <!-- Quick tools -->
+                        <div class="menu-section">
+                            <span class="menu-section-title"><i class="bi bi-tools"></i>Quick Tools</span>
+                            <button id="big5HostButton" class="btn btn-primary" title="Auto-select France, Germany, Italy, Spain, UK + a host country (all marked as auto-qualifiers, fills out to 27 countries)"><i class="bi bi-stars"></i>Big 5 + Host</button>
+                            <button id="randomEscButton" class="btn btn-warning" title="Randomly pick 26 currently-active countries and randomize odds, genres and scenographies"><i class="bi bi-dice-5-fill"></i>Random ESC</button>
+                            <button id="exportCsvButton" class="btn btn-outline-secondary" disabled title="Download the most recent final results as a CSV file"><i class="bi bi-filetype-csv"></i>Export CSV</button>
+                            <button id="exportPngButton" class="btn btn-outline-secondary" disabled title="Save the currently visible results as a PNG image"><i class="bi bi-image"></i>Export PNG</button>
+                            <button id="shareLinkButton" class="btn btn-outline-info" title="Copy a URL that contains the current scenario to clipboard"><i class="bi bi-share-fill"></i>Share Setup</button>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -821,10 +973,18 @@
             <div class="col-md-12">
                 <div class="card settings-card">
                     <div class="card-body">
-                        <h5>V.1.2.8</h5>
+                        <h5>V.1.3.0</h5>
                         <h2>Select Participating Countries and Set Odds<br> (11-50 countries semi-finals starting with
                             27, odds -> lower is better):</h2>
-                        <h3 id="selectedCount" style="color: black;">Total Selected Countries: 0/50</h3>
+                        <h3 id="selectedCount" class="status-empty">Total Selected Countries: 0/50</h3>
+                        <div class="row mb-2">
+                            <div class="col-md-6">
+                                <input type="search" id="countrySearch" class="form-control" placeholder="🔍 Filter countries by name (in all categories)…">
+                            </div>
+                            <div class="col-md-6 d-flex align-items-center">
+                                <small class="text-muted" id="countrySearchHint">Tip: type a country name to hide everything else. Empty to clear filter.</small>
+                            </div>
+                        </div>
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="accordion" id="countryAccordion">
@@ -1205,10 +1365,11 @@
             // Dark mode toggle
             const toggleButton = document.getElementById('toggleDarkMode');
             function updateToggleButton() {
+                // Use innerHTML so the bootstrap icon is preserved next to the label.
                 if (document.body.classList.contains('dark-mode')) {
-                    toggleButton.textContent = 'LIGHT MODE';
+                    toggleButton.innerHTML = '<i class="bi bi-sun-fill"></i>Light mode';
                 } else {
-                    toggleButton.textContent = 'DARK MODE';
+                    toggleButton.innerHTML = '<i class="bi bi-moon-stars-fill"></i>Dark mode';
                 }
             }
             toggleButton.addEventListener('click', () => {
@@ -1237,9 +1398,9 @@
                 }
             });
 
-            const chartContainer = document.createElement('div');
-            chartContainer.id = 'chartContainer';
-            document.querySelector('.eurovision-simulator').appendChild(chartContainer);
+            // Use the existing #chartContainer defined in HTML (line ~1200) instead of
+            // creating a duplicate element with the same id.
+            const chartContainer = document.getElementById('chartContainer');
 
             // Data will be loaded from data.json
             let currentContestants = [];
@@ -1295,9 +1456,6 @@
 
             function createCountryTable(containerId, countries) {
                 const container = document.getElementById(containerId);
-                container.querySelectorAll('.jury-odds-input, .tele-odds-input').forEach(input => {
-                    input.addEventListener('change', validateOddsDifference);
-                });
                 let html = '';
                 for (let i = 0; i < countries.length; i += 3) {
                     html += '<tr>';
@@ -1343,6 +1501,11 @@
                     html += '</tr>';
                 }
                 container.innerHTML = html;
+
+                // Attach validation listeners to the newly-created inputs
+                container.querySelectorAll('.jury-odds-input, .tele-odds-input').forEach(input => {
+                    input.addEventListener('change', validateOddsDifference);
+                });
             }
 
 
@@ -1388,7 +1551,13 @@
                     Object.entries(contestantLists).forEach(([tableId, list]) => {
                         createCountryTable(tableId, list);
                     });
-                    
+
+                    // Attach the change listener now that the checkboxes actually exist.
+                    // Note: addCheckboxListeners is hoisted (function declaration) so it's
+                    // safe to reference here even though it's defined later in the file.
+                    document.querySelectorAll('.country-checkbox').forEach(addCheckboxListeners);
+                    updateAQCheckboxStatus();
+
                     console.log('✅ Data loaded successfully from data.json');
                 } catch (error) {
                     console.error('❌ Error loading data.json:', error);
@@ -1467,7 +1636,12 @@
                      * selected year is not found, an error will be thrown.
                      */
             async function loadParticipants() {
-                const year = parseInt(document.getElementById('participantsYear').value, 10);
+                const yearRaw = document.getElementById('participantsYear').value;
+                const year = parseInt(yearRaw, 10);
+                if (Number.isNaN(year)) {
+                    alert('Please enter a valid Eurovision year.');
+                    return;
+                }
                 try {
                     const [contestDataResponse, countriesResponse] = await Promise.all([
                         fetch('https://raw.githubusercontent.com/josago97/EurovisionDataset/main/dataset/eurovision.json'),
@@ -1505,8 +1679,10 @@
                     createCountryTable('currentContestants', contestantLists.currentContestants);
                     createCountryTable('oldContestants', contestantLists.oldContestants);
 
-                    // Reattach event listeners to all country checkboxes
-                    document.querySelectorAll('.country-checkbox').forEach(addCheckboxListeners);
+                    // Reattach event listeners only to the freshly rebuilt tables to avoid
+                    // accumulating duplicate listeners on the other (untouched) tables.
+                    document.querySelectorAll('#currentContestants .country-checkbox, #oldContestants .country-checkbox')
+                        .forEach(addCheckboxListeners);
 
                     // Update AQ checkbox status
                     updateAQCheckboxStatus();
@@ -1614,9 +1790,9 @@
                 });
             });
 
-            document.querySelectorAll('.jury-odds-input, .tele-odds-input').forEach(input => {
-                input.addEventListener('change', validateOddsDifference);
-            });
+            // NOTE: Listeners on .jury-odds-input / .tele-odds-input are now attached inside
+            // createCountryTable() right after innerHTML is set, since the inputs don't exist
+            // yet at this point in the script lifecycle (data.json loads asynchronously).
 
             defaultOddsButton.addEventListener('click', () => {
                 document.querySelectorAll('.jury-odds-input, .tele-odds-input').forEach(input => {
@@ -2240,19 +2416,41 @@
             })
 
             importCustomContestantButton.addEventListener('click', async () => {
-                //customContestants.
-                let str = prompt("Enter your export: (The export will not overwrite contestants you have already entered.)");
-                const saveList = JSON.parse(str)
-                console.log(saveList)
+                const str = prompt("Enter your export: (The export will not overwrite contestants you have already entered.)");
+                if (str === null || str.trim() === '') {
+                    return; // User cancelled or pasted nothing
+                }
+                let saveList;
+                try {
+                    saveList = JSON.parse(str);
+                } catch (err) {
+                    alert(`Could not import: invalid JSON (${err.message}).`);
+                    return;
+                }
+                if (!Array.isArray(saveList) || saveList.length < 3 ||
+                    !Array.isArray(saveList[0]) || typeof saveList[1] !== 'object' || !Array.isArray(saveList[2])) {
+                    alert('Could not import: unexpected data shape. Expected [names[], codeMap{}, flagUrls[]].');
+                    return;
+                }
+                console.log(saveList);
                 customContestants = [...customContestants, ...saveList[0]];
                 customcountryCodeMap = { ...customcountryCodeMap, ...saveList[1] };
                 customContestantsFlag = [...customContestantsFlag, ...saveList[2]];
-                for (var i = 0; i < saveList[0].length; i++) {
-                    addCSS(`.flag-icon-${saveList[1][Object.keys(saveList[1])[i]].replace(/\s/g, '')}{ background-image: url("${saveList[2][i].replace(/\s/g, '')}"); }`)
+                // Map each new contestant name to its code via the saved code map (rather than
+                // relying on the order of Object.keys, which is fragile).
+                for (let i = 0; i < saveList[0].length; i++) {
+                    const name = saveList[0][i];
+                    const code = saveList[1][name];
+                    const flagUrl = saveList[2][i];
+                    if (code && flagUrl) {
+                        addCSS(`.flag-icon-${String(code).replace(/\s/g, '')}{ background-image: url("${String(flagUrl).replace(/\s/g, '')}"); }`);
+                    }
                 }
 
-                alert("Imported!")
+                alert("Imported!");
                 createCountryTable('customContestants', customContestants);
+                document.querySelectorAll('#customContestants .country-checkbox').forEach(addCheckboxListeners);
+                updateAQCheckboxStatus();
             })
 
 
@@ -2266,6 +2464,10 @@
             function hideSettingsShowSimulation() {
                 document.querySelector('.settings-card').style.display = 'none';
                 resultsDiv.innerHTML = '';
+
+                // Remove any pre-existing simulationArea so we don't end up with duplicate ids
+                const previousSimulationArea = document.getElementById('simulationArea');
+                if (previousSimulationArea) previousSimulationArea.remove();
 
                 const simulationArea = document.createElement('div');
                 simulationArea.id = 'simulationArea';
@@ -2647,7 +2849,7 @@
                         return { name: checkbox.value, juryOdds: juryOdds, teleOdds: teleOdds, isAQ: isAQ, genre: genre, scenography: scenography, songTitle: songTitle, artistName: artistName, language: language };
                     });
 
-                if (selectedCountries.length < 10 || selectedCountries.length > 50) {
+                if (selectedCountries.length < 11 || selectedCountries.length > 50) {
                     alert('Please select between 11 and 50 countries.');
                     return;
                 }
@@ -2669,27 +2871,16 @@
                         semiFinal1Results = contestResults.semiFinal1;
                         semiFinal2Results = contestResults.semiFinal2;
                         finalResults = contestResults.finalResults;
-                        displayFinalResults(finalResults);
                         semiFinal1Button.disabled = false;
                         semiFinal2Button.disabled = false;
                         semiFinal1Button.classList.add('btn-pink');
                         semiFinal2Button.classList.add('btn-pink');
 
+                        // For 27+ countries, don't dump everything onto the page automatically.
+                        // The user reaches each view through dedicated buttons (Semi-Final 1,
+                        // Semi-Final 2, Final, Simulate Semi-Final Draw, Dynamic ESC Voting...).
                         document.querySelector('.settings-card').style.display = 'none';
-                        resultsDiv.innerHTML = '<button id="showChartsButton" style="display: none;"> class="btn btn-info mt-3">Show Semi-Final Charts</button>';
-
-                        document.getElementById('showChartsButton').addEventListener('click', function () {
-                            chartContainer.style.display = 'block';
-                            chartContainer.innerHTML = `
-                    ${createSemiFinalTable(semiFinal1Results)}
-                    ${createSemiFinalTable(semiFinal2Results)}
-                    ${selectedVotingSystem === 'current' ? createVotingChart(semiFinal1Results, "Jury Voting - Semi-Final 1", false) : ''}
-                    ${createVotingChart(semiFinal1Results, "Televoting - Semi-Final 1", true)}
-                    ${selectedVotingSystem === 'current' ? createVotingChart(semiFinal2Results, "Jury Voting - Semi-Final 2", false) : ''}
-                    ${createVotingChart(semiFinal2Results, "Televoting - Semi-Final 2", true)}
-                `;
-                            this.style.display = 'none';
-                        });
+                        resultsDiv.innerHTML = '';
 
                         simulateButton.disabled = false;
                         document.getElementById('simulateSemiDrawButton').disabled = false;
@@ -2719,11 +2910,11 @@
             });
 
             finaleButton.addEventListener('click', () => {
-                if (finalResults.results) {
-                    displayFinalResults(finalResults);
-                } else {
-                    displayResults(finalResults.results, Object.keys(finalResults.results).map(name => ({ name, odds: finalResults.results[name].odds, genre: finalResults.results[name].genre })), finalResults.votingOrder);
+                if (!finalResults || !finalResults.results) {
+                    alert('Please generate the contest results first.');
+                    return;
                 }
+                displayFinalResults(finalResults);
             });
 
             simulateButton.addEventListener('click', () => {
@@ -2736,10 +2927,12 @@
                 const timerDisplay = document.getElementById('timerDisplay');
                 const revealTime = parseInt(document.getElementById('revealTime').value);
 
+                // Columns in semiFinalTable: 0=Country, 1=Song Title, 2=Artist,
+                // 3=Language, 4=Genre. Pull genre from cell[4], not cell[1].
                 const allCountries = Array.from(semiFinalTable.rows).map(row => ({
                     element: row,
                     country: row.cells[0].textContent.trim(),
-                    genre: row.cells[1].textContent.trim(),
+                    genre: row.cells[4] ? row.cells[4].textContent.trim() : '',
                     points: currentSemiFinal === 1
                         ? semiFinal1Results.results[row.cells[0].textContent.trim()].juryTotal +
                         semiFinal1Results.results[row.cells[0].textContent.trim()].teleTotal
@@ -2809,16 +3002,9 @@
                     }
                 }
 
-                if (e.target && e.target.id === 'showChartsButton') {
-                    const chartsDiv = document.querySelector('.semi-final-charts');
-                    chartsDiv.style.display = 'block';
-                    chartsDiv.innerHTML = `
-            ${createVotingChart(currentSemiFinal === 1 ? semiFinal1Results : semiFinal2Results, `Jury Voting - Semi-Final ${currentSemiFinal}`, false)}
-            ${createVotingChart(currentSemiFinal === 1 ? semiFinal1Results : semiFinal2Results, `Televoting - Semi-Final ${currentSemiFinal}`, true)}
-            ${createSemiFinalTable(currentSemiFinal === 1 ? semiFinal1Results : semiFinal2Results)}
-        `;
-                    e.target.style.display = 'none';
-                }
+                // NOTE: showChartsButton has its own dedicated listener attached when the
+                // button is created (see generateButton click handler). Avoid registering a
+                // duplicate document-level listener here.
             });
 
 
@@ -2826,6 +3012,17 @@
                 const lowerBound = Math.max(min, baseOdds - maxDifference);
                 const upperBound = Math.min(max, baseOdds + maxDifference);
                 return Math.floor(Math.random() * (upperBound - lowerBound + 1)) + lowerBound;
+            }
+
+            // Unbiased Fisher-Yates shuffle. Replaces the previous `.sort(() => 0.5 - Math.random())`
+            // pattern, which produces non-uniform permutations (especially in V8).
+            function shuffleArray(arr) {
+                const a = [...arr];
+                for (let i = a.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [a[i], a[j]] = [a[j], a[i]];
+                }
+                return a;
             }
 
             function calculateWeight(odds) {
@@ -2840,7 +3037,7 @@
             const geographicalBlocks = {
                 'Nordic': ['Denmark', 'Finland', 'Iceland', 'Norway', 'Sweden'],
                 'Baltic': ['Estonia', 'Latvia', 'Lithuania'],
-                'Balkans': ['Albania', 'Bosnia and Herzegovina', 'Bulgaria', 'Croatia', 'Greece', 'Montenegro', 'North Macedonia', 'Serbia', 'Slovenia'],
+                'Balkans': ['Albania', 'Bosnia & Herz.', 'Bosnia and Herzegovina', 'Bosnia & Herzegovina', 'Bulgaria', 'Croatia', 'Greece', 'Montenegro', 'North Macedonia', 'Serbia', 'Slovenia'],
                 'PostSoviet': ['Armenia', 'Azerbaijan', 'Belarus', 'Georgia', 'Kazakhstan', 'Moldova', 'Russia', 'Ukraine'],
                 'Western': ['Austria', 'Belgium', 'France', 'Germany', 'Luxembourg', 'Netherlands', 'Switzerland'],
                 'Mediterranean': ['Cyprus', 'Greece', 'Israel', 'Italy', 'Malta', 'Portugal', 'San Marino', 'Spain'],
@@ -2850,7 +3047,7 @@
 
             // Cultural/linguistic groups
             const culturalGroups = {
-                'Slavic': ['Belarus', 'Bosnia and Herzegovina', 'Bulgaria', 'Croatia', 'Czechia', 'North Macedonia', 'Poland', 'Russia', 'Serbia', 'Slovakia', 'Slovenia', 'Ukraine'],
+                'Slavic': ['Belarus', 'Bosnia & Herz.', 'Bosnia and Herzegovina', 'Bosnia & Herzegovina', 'Bulgaria', 'Croatia', 'Czechia', 'North Macedonia', 'Poland', 'Russia', 'Serbia', 'Slovakia', 'Slovenia', 'Ukraine'],
                 'Romance': ['Andorra', 'France', 'Italy', 'Monaco', 'Portugal', 'Romania', 'San Marino', 'Spain'],
                 'Germanic': ['Austria', 'Belgium', 'Germany', 'Liechtenstein', 'Luxembourg', 'Netherlands', 'Switzerland'],
                 'Turkic': ['Azerbaijan', 'Kazakhstan', 'Turkey'],
@@ -2984,12 +3181,19 @@
                 // - Each voter's weights are different (geographical/cultural bias)
                 // Result: Some countries get points from 30+ countries, others from 3-5
 
+                // Work on a local copy so we don't mutate the caller's array
+                let pool = [...weightedCountries];
+
                 for (let i = 0; i < points.length; i++) {
-                    let totalWeight = weightedCountries.reduce((sum, country) => sum + country.weight, 0);
+                    // Guard: small semi-finals (e.g. 10 countries) may run out of recipients
+                    // before all 10 point values are distributed. Stop early in that case.
+                    if (pool.length === 0) break;
+
+                    const totalWeight = pool.reduce((sum, country) => sum + country.weight, 0);
                     let randomWeight = Math.random() * totalWeight;
                     let selectedCountry;
 
-                    for (const country of weightedCountries) {
+                    for (const country of pool) {
                         randomWeight -= country.weight;
                         if (randomWeight <= 0) {
                             selectedCountry = country.country;
@@ -2999,11 +3203,13 @@
 
                     if (selectedCountry) {
                         selectedCountries.push(selectedCountry);
-                        weightedCountries = weightedCountries.filter(c => c.country !== selectedCountry);
+                        pool = pool.filter(c => c.country !== selectedCountry);
                     } else {
-                        const remainingCountry = weightedCountries[Math.floor(Math.random() * weightedCountries.length)].country;
-                        selectedCountries.push(remainingCountry);
-                        weightedCountries = weightedCountries.filter(c => c.country !== remainingCountry);
+                        // Fallback: pick any remaining (covers floating-point edge cases).
+                        const fallback = pool[Math.floor(Math.random() * pool.length)];
+                        if (!fallback) break;
+                        selectedCountries.push(fallback.country);
+                        pool = pool.filter(c => c.country !== fallback.country);
                     }
                 }
 
@@ -3054,7 +3260,7 @@
                 });
 
                 const points = [12, 10, 8, 7, 6, 5, 4, 3, 2, 1];
-                const votingOrder = (votingCountries || countries).map(c => c.name).sort(() => 0.5 - Math.random());
+                const votingOrder = shuffleArray((votingCountries || countries).map(c => c.name));
 
                 votingOrder.forEach(voter => {
                     const availableCountries = countries.filter(c => c.name !== voter);
@@ -3112,7 +3318,7 @@
                     const autoQualifiers = countries.filter(c => c.isAQ).slice(0, 10);
                     const remainingCountries = countries.filter(c => !c.isAQ);
 
-                    const shuffledCountries = [...remainingCountries].sort(() => 0.5 - Math.random());
+                    const shuffledCountries = shuffleArray(remainingCountries);
                     const semiFinal1Countries = shuffledCountries.slice(0, Math.ceil(shuffledCountries.length / 2));
                     const semiFinal2Countries = shuffledCountries.slice(Math.ceil(shuffledCountries.length / 2));
 
@@ -3158,15 +3364,29 @@
                     }
                 });
 
-                // Update the <h3> element with the selected count
+                // Update the <h3> element with the selected count + status class.
+                // Status meaning:
+                //   empty    (0)        -> grey
+                //   low      (1-10)     -> yellow (below the 11-country minimum)
+                //   ok       (11-25)    -> green  (valid simulation, no semi-finals)
+                //   perfect  (26-37)    -> gold   (matches realistic ESC sizes)
+                //   ok       (38-50)    -> green
+                //   over     (>50)      -> red    (exceeds maximum)
                 const selectedCountElement = document.getElementById('selectedCount');
                 selectedCountElement.textContent = `Total Selected Countries: ${totalSelectedCountries}/50`;
-
-                // Change color based on the number of selected countries
-                if (totalSelectedCountries < 11 || totalSelectedCountries > 50) {
-                    selectedCountElement.style.color = 'red';
+                selectedCountElement.classList.remove('status-empty', 'status-low', 'status-ok', 'status-perfect', 'status-over');
+                // Strip legacy inline color so the new class-based colors win
+                selectedCountElement.style.color = '';
+                if (totalSelectedCountries === 0) {
+                    selectedCountElement.classList.add('status-empty');
+                } else if (totalSelectedCountries < 11) {
+                    selectedCountElement.classList.add('status-low');
+                } else if (totalSelectedCountries > 50) {
+                    selectedCountElement.classList.add('status-over');
+                } else if (totalSelectedCountries >= 26 && totalSelectedCountries <= 37) {
+                    selectedCountElement.classList.add('status-perfect');
                 } else {
-                    selectedCountElement.style.color = 'black';
+                    selectedCountElement.classList.add('status-ok');
                 }
 
                 console.log(`Total selected countries: ${totalSelectedCountries}, AQ enabled: ${shouldEnableAQ}`);
@@ -3180,7 +3400,11 @@
                 });
             }
 
-            document.querySelectorAll('.country-checkbox').forEach(addCheckboxListeners);
+            // NOTE: The original code attached listeners here synchronously, but
+            // country-checkbox elements only exist after `loadData()` finishes
+            // populating tables from data.json. The listeners are now wired up
+            // inside `loadData()` (and after every table rebuild) so this line is
+            // intentionally a no-op kept for backwards compatibility.
 
 
 
@@ -3209,12 +3433,12 @@
             <tbody>
     `;
 
-                const sortedCountries = countries.sort((a, b) => {
+                const sortedCountries = [...countries].sort((a, b) => {
                     const totalA = results[a.name].juryTotal + results[a.name].teleTotal;
                     const totalB = results[b.name].juryTotal + results[b.name].teleTotal;
                     if (totalA !== totalB) return totalB - totalA;
                     if (results[a.name].teleTotal !== results[b.name].teleTotal) return results[b.name].teleTotal - results[a.name].teleTotal;
-                    return tiebreaker(results[b.name], results[a.name]);
+                    return tiebreaker(results[a.name], results[b.name]);
                 });
 
                 sortedCountries.forEach((country, index) => {
@@ -3538,7 +3762,7 @@
                         const totalB = results[b].juryTotal + results[b].teleTotal;
                         if (totalA !== totalB) return totalB - totalA;
                         if (results[a].teleTotal !== results[b].teleTotal) return results[b].teleTotal - results[a].teleTotal;
-                        return tiebreaker(results[b], results[a]);
+                        return tiebreaker(results[a], results[b]);
                     });
 
                 let html = `
@@ -3653,8 +3877,10 @@
                     if (aCount !== bCount) return bCount - aCount;
                 }
 
-                // If everything is still tied, maintain the previous order
-                if (previousOrder) {
+                // If everything is still tied, maintain the previous order. Note: result
+                // objects don't carry a `.name` property, so this fallback only works when
+                // the caller supplies items that include one.
+                if (previousOrder && a && b && a.name && b.name) {
                     return previousOrder.indexOf(a.name) - previousOrder.indexOf(b.name);
                 }
 
@@ -3662,17 +3888,9 @@
                 return 0;
             }
 
-            document.addEventListener('click', function (e) {
-                if (e.target && e.target.id === 'showChartsButton') {
-                    chartContainer.style.display = 'block';
-                    chartContainer.innerHTML = `
-            ${createVotingChart(currentSemiFinal === 1 ? semiFinal1Results : semiFinal2Results, `Jury Voting - Semi-Final ${currentSemiFinal}`, false)}
-            ${createVotingChart(currentSemiFinal === 1 ? semiFinal1Results : semiFinal2Results, `Televoting - Semi-Final ${currentSemiFinal}`, true)}
-            ${createSemiFinalTable(currentSemiFinal === 1 ? semiFinal1Results : semiFinal2Results)}
-        `;
-                    e.target.style.display = 'none';
-                }
-            });
+            // NOTE: A duplicate document-level click listener for showChartsButton was
+            // removed here. The button now has its own dedicated listener attached when it
+            // is created in the generateButton handler.
 
             document.querySelectorAll('.aq-checkbox').forEach(checkbox => {
                 checkbox.disabled = !checkbox.previousElementSibling.previousElementSibling.checked;
@@ -3938,6 +4156,11 @@
                 document.getElementById('nextJuryButton').addEventListener('click', revealNextJury);
 
                 function revealNextTele() {
+                    // Guard: rows is only initialized once "Reveal Televoting" is pressed.
+                    if (!Array.isArray(rows)) {
+                        console.warn('revealNextTele called before televoting was started.');
+                        return;
+                    }
                     if (currentTeleIndex < rows.length) {
                         const row = rows[currentTeleIndex];
                         const country = row.dataset.country;
@@ -4094,6 +4317,14 @@
                 // Show settings card
                 document.querySelector('.settings-card').style.display = 'block';
 
+                // Restore the "Load Participants" controls that generateButton hides
+                const loadBtn = document.getElementById('loadParticipantsButton');
+                if (loadBtn) loadBtn.style.display = '';
+                const yearInput = document.getElementById('participantsYear');
+                if (yearInput) yearInput.style.display = '';
+                const yearLabel = document.querySelector("label[for='participantsYear']");
+                if (yearLabel) yearLabel.style.display = '';
+
                 // Scroll to top
                 window.scrollTo(0, 0);
 
@@ -4117,7 +4348,7 @@
                             <li><strong>Select Participating Countries:</strong> Choose from current and old contestants.</li>
                             <li><strong>Set Odds:</strong> Adjust the odds for each country (lower is better).</li>
                             <li><strong>Assign Genres:</strong> Select a genre for each country's song.</li>
-                            <li><strong>Auto-Qualifiers:</strong> Mark countries as auto-qualifiers (up to 6).</li>
+                            <li><strong>Auto-Qualifiers:</strong> Mark countries as auto-qualifiers (up to 10, available with 27+ countries selected).</li>
                             <li><strong>Randomize:</strong> Use buttons to randomize odds and genres.</li>
                             <li><strong>Adjust Diversity:</strong> Use the diversity slider to add variation to jury and televote scores.</li>
                             <li><strong>Genre Likeability:</strong> Set how well-liked each genre is, affecting voting patterns.</li>
@@ -4136,6 +4367,10 @@
         </div>
     `;
 
+                // Remove any previous instances so we don't accumulate duplicate modals
+                const existingInstructionsModal = document.getElementById('instructionsModal');
+                if (existingInstructionsModal) existingInstructionsModal.remove();
+
                 document.body.insertAdjacentHTML('beforeend', instructionsHTML);
 
                 const instructionsModal = new bootstrap.Modal(document.getElementById('instructionsModal'));
@@ -4148,7 +4383,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="whatsNewModalLabel">Eurovision Simulator - Version 1.2.5 Updates!</h5>
+                <h5 class="modal-title" id="whatsNewModalLabel">Eurovision Simulator - Version 1.3.0 Updates!</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -4158,6 +4393,56 @@
                     This simulator was originally created by <strong>u/Successful_Sky7328</strong>. After a period of inactivity (around 8 months), and with their kind permission, I've taken on the task of updating and hopefully expanding this wonderful tool for the Eurovision community!
 
                 </div>
+                <!--
+                    Latest version notes: 1.3.0 (by u/alexsemilos)
+                    Quick Tools, UI overhaul and a heap of bug fixes.
+                -->
+                <h6>Version 1.3.0 (by u/alexsemilos) <span class="badge bg-warning text-dark">QUICK TOOLS & UI POLISH</span></h6>
+                <ul>
+                    <li style="color:green;"><strong>&lt;NEW FEATURE&gt; Quick Tools menu:</strong>
+                        <ul>
+                            <li><strong>Big 5 + Host</strong> - one-click setup that picks France, Germany, Italy, Spain, UK plus a host country, fills the contest up to 27 countries with random current contestants, and force-marks the six as auto-qualifiers.</li>
+                            <li><strong>Random ESC</strong> - auto-pick 26 random current contestants and randomize odds, genres and scenographies in a single click.</li>
+                            <li><strong>Export CSV</strong> - download the latest Grand Final results as a CSV file (rank, country, song, artist, language, genre, scenography, jury/tele/total points).</li>
+                            <li><strong>Export PNG</strong> - save the currently visible results table or chart as a high-res PNG image (powered by html2canvas).</li>
+                            <li><strong>Share Setup</strong> - copy a shareable URL to clipboard that encodes the entire scenario in a hash. Anyone who opens the link sees the same simulator setup.</li>
+                        </ul>
+                    </li>
+                    <li style="color:green;"><strong>&lt;NEW FEATURE&gt; Country search filter:</strong> a live search box above the country tables hides everything that doesn't match the typed name across all categories (current/old/regions/custom).</li>
+                    <li style="color:green;"><strong>&lt;NEW FEATURE&gt; Sortable result tables:</strong> click any column header in result/chart tables to sort ascending/descending with arrow indicators. Numeric columns are detected automatically.</li>
+                    <li style="color:blue;"><strong>&lt;UI OVERHAUL&gt; Menu redesigned:</strong>
+                        <ul>
+                            <li>Buttons grouped into clear sections: <em>Run</em>, <em>View Results</em>, <em>Live Simulation</em>, <em>Scenarios</em> and <em>Quick Tools</em> with section titles and dividers.</li>
+                            <li>Bootstrap Icons added to every button for faster scanning.</li>
+                            <li><strong>GENERATE</strong> turned into a hero button with a blue→gold gradient — the main action stands out.</li>
+                            <li>Consistent colour convention across buttons (primary/success/info/warning/danger).</li>
+                            <li>Help, What's New and Dark Mode moved to a small utilities row at the top.</li>
+                        </ul>
+                    </li>
+                    <li style="color:blue;"><strong>&lt;UI POLISH&gt; "Total Selected Countries" status badge:</strong> the counter now changes colour based on the count — grey (0), yellow (&lt;11), green (valid range), gold with glow (26-37, perfect ESC size), red (&gt;50). Instant visual feedback.</li>
+                    <li style="color:red;"><strong>&lt;CRITICAL BUG FIX&gt; "Total Selected" stuck at 0:</strong> change listeners on country checkboxes were attached synchronously before <code>data.json</code> finished loading, leaving the initial set with no listener. Manually clicking a checkbox didn't update the counter. Listeners are now attached after the tables are populated.</li>
+                    <li style="color:red;"><strong>&lt;CRITICAL BUG FIX&gt; Generate crashed in 27-country setups:</strong> <code>selectVotingCountries</code> always tried to distribute 10 point values (12, 10, 8…1), even when a small semi-final had fewer than 11 countries. Now stops early when the recipient pool empties (and no longer mutates the caller's array).</li>
+                    <li style="color:red;"><strong>&lt;BUG FIX&gt; Showing all results on Generate:</strong> the click handler was rendering the full Final results table immediately and then wiping it with a hidden button — half-broken. The original "user picks the view" behaviour for 27+ country contests is restored.</li>
+                    <li style="color:red;"><strong>&lt;BUG FIX&gt; Cultural/geographical voting blocks:</strong> "Bosnia and Herzegovina" was inconsistently spelled (sometimes shortened to "Bosnia"), so it never received the Balkan/Slavic voting bonuses. Names are now standardized.</li>
+                    <li style="color:red;"><strong>&lt;BUG FIX&gt; Tiebreaker arguments swapped:</strong> in some sort calls the comparator was invoked with the arguments in the wrong order, flipping the tiebreaker outcome.</li>
+                    <li style="color:red;"><strong>&lt;BUG FIX&gt; Genre column read from wrong cell:</strong> Simulate Semi-Final was reading the song title cell instead of the genre cell.</li>
+                    <li style="color:red;"><strong>&lt;BUG FIX&gt; Show Charts button HTML:</strong> the auto-generated "Show Semi-Final Charts" button was assembled with a broken HTML attribute that prevented it from rendering.</li>
+                    <li style="color:red;"><strong>&lt;BUG FIX&gt; Duplicate <code>chartContainer</code> elements:</strong> a dynamically-created <code>#chartContainer</code> shadowed the one in HTML, causing some charts to never appear.</li>
+                    <li style="color:red;"><strong>&lt;BUG FIX&gt; Duplicate event listeners:</strong> two identical <code>document.click</code> handlers were attached to <code>showChartsButton</code>, plus a leaking listener pile-up after every <em>Load Participants</em> call. Cleaned up.</li>
+                    <li style="color:red;"><strong>&lt;BUG FIX&gt; Big 5 + Host didn't mark countries as AQ:</strong> the AQ feature requires 27+ selected countries; the helper now auto-fills with random current contestants up to that threshold and force-checks the AQ boxes.</li>
+                    <li style="color:red;"><strong>&lt;BUG FIX&gt; Reset didn't restore "Load Participants" controls:</strong> the year input and Load button stayed hidden after the first run.</li>
+                    <li style="color:red;"><strong>&lt;BUG FIX&gt; Auto-Qualifiers count message:</strong> instructions said "up to 6", but the actual cap has been 10 since v1.1.0.</li>
+                    <li style="color:red;"><strong>&lt;BUG FIX&gt; Validation for the "11-50 countries" rule:</strong> alert message now matches the real rule (was inconsistent across two error paths).</li>
+                    <li style="color:red;"><strong>&lt;BUG FIX&gt; <code>validateOddsDifference</code> not wired up:</strong> for tables created after the initial load (custom contestants, year-loaded participants, scenario imports) the inputs had no listeners, so out-of-range jury/tele odds slipped through silently. Listeners are now attached inside <code>createCountryTable</code> for every newly-rendered input.</li>
+                    <li style="color:red;"><strong>&lt;BUG FIX&gt; Modal duplication:</strong> opening the Instructions or What's New modal multiple times left orphaned modal nodes in the DOM. Now they are removed before re-creation.</li>
+                    <li style="color:red;"><strong>&lt;BUG FIX&gt; Custom contestant import:</strong> <code>JSON.parse</code> wasn't wrapped in a try/catch, and the flag-icon code mapping relied on <code>Object.keys</code> ordering instead of the actual saved code map. Robust import + clear error messaging now in place.</li>
+                    <li style="color:#666;"><strong>&lt;CODE QUALITY&gt; Unbiased Fisher-Yates shuffle:</strong> replaced the <code>.sort(() =&gt; 0.5 - Math.random())</code> pattern (known to produce non-uniform permutations in V8) with a real Fisher-Yates shuffle. Voting orders and semi-final draws are now genuinely random.</li>
+                    <li style="color:#666;"><strong>&lt;CODE QUALITY&gt; <code>parseInt</code> guard for the year input:</strong> entering an empty/garbage year now shows a clear alert instead of fetching <code>NaN</code>.</li>
+                    <li style="color:#666;"><strong>&lt;CODE QUALITY&gt; Other cleanups:</strong> dead DOMContentLoaded listener removed, dead branches in the Final button handler simplified, <code>revealNextTele</code> guarded against being called before televoting starts, <code>simulationArea</code> nodes removed before re-insert to prevent duplicate IDs.</li>
+                </ul>
+
+                <hr>
+
                 <!--
                     Latest version notes: 1.2.8 (by u/alexsemilos)
                     Bug fixes and architecture improvements
@@ -4306,7 +4591,7 @@
                     <li>New built-in countries from around the world.</li>
                     <li>Counter for countries participating in the season.</li>
                     <li>Minor adjustments to odds calculations.</li>
-                    <li><i>... (and other changes from v.1.1.1 as listed in your original file) ...</i></li>
+                    <li>Various smaller UX adjustments and bug fixes.</li>
                 </ul>
                  <h6>Version 1.1.0 (by u/Successful_Sky7328)</h6>
                 <ul>
@@ -4335,13 +4620,387 @@
 </div>
     `;
 
+                // Remove any previous instances so we don't accumulate duplicate modals
+                const existingWhatsNewModal = document.getElementById('whatsNewModal');
+                if (existingWhatsNewModal) existingWhatsNewModal.remove();
+
                 document.body.insertAdjacentHTML('beforeend', whatsNewHTML);
 
                 const whatsNewModal = new bootstrap.Modal(document.getElementById('whatsNewModal'));
                 whatsNewModal.show();
             });
             updateAQCheckboxStatus();
-            document.addEventListener('DOMContentLoaded', updateAQCheckboxStatus);
+            // NOTE: DOMContentLoaded has already fired by the time this script runs
+            // (the <script> tag sits at the end of <body>), so registering a listener
+            // for it here would never trigger. The direct call above is sufficient.
+
+
+            // ===================================================================
+            // ===== QUICK TOOLS (Big 5+Host, Random ESC, Export, Share, Search,
+            //                   Sortable headers) =============================
+            // ===================================================================
+
+            // ---- Country search filter ----
+            // Hide checkbox <td> cells whose country name doesn't match the query.
+            // Works across all country tables (current/old/regions/custom).
+            (function setupCountrySearch() {
+                const searchInput = document.getElementById('countrySearch');
+                if (!searchInput) return;
+                const handler = () => {
+                    const q = searchInput.value.trim().toLowerCase();
+                    document.querySelectorAll('.selection-table .country-checkbox').forEach(cb => {
+                        const td = cb.closest('td');
+                        if (!td) return;
+                        const name = (cb.value || '').toLowerCase();
+                        const match = !q || name.includes(q);
+                        td.style.display = match ? '' : 'none';
+                    });
+                };
+                searchInput.addEventListener('input', handler);
+            })();
+
+
+            // ---- Big 5 + Host helper ----
+            // The Big 5 always auto-qualify in real Eurovision: France, Germany, Italy,
+            // Spain, United Kingdom — plus the host country (last winner, by tradition).
+            // The AQ feature in this simulator only unlocks at 27+ selected countries,
+            // so this button auto-fills the contest with random current contestants up
+            // to that threshold and then forces the Big 5 + Host to be AQ.
+            const BIG5 = ['France', 'Germany', 'Italy', 'Spain', 'United Kingdom'];
+            document.getElementById('big5HostButton').addEventListener('click', () => {
+                const host = prompt('Enter the host country name (last year\'s winner):', 'Switzerland');
+                if (host === null) return; // user cancelled
+                const targetCountries = [...BIG5];
+                const trimmedHost = host.trim();
+                if (trimmedHost && !targetCountries.includes(trimmedHost)) {
+                    targetCountries.push(trimmedHost);
+                }
+
+                // Step 1: select all Big 5 + Host country checkboxes that exist in any table.
+                const notFound = [];
+                const aqTargetCheckboxes = [];
+                targetCountries.forEach(name => {
+                    const cb = document.querySelector(`.country-checkbox[value="${CSS.escape(name)}"]`);
+                    if (!cb) {
+                        notFound.push(name);
+                        return;
+                    }
+                    cb.checked = true;
+                    aqTargetCheckboxes.push(cb);
+                });
+
+                // Step 2: top up with random Current Contestants until we reach the AQ
+                // threshold (27 countries). This guarantees the AQ checkboxes get enabled.
+                const MIN_FOR_AQ = 27;
+                const allCurrentBoxes = Array.from(document.querySelectorAll('#currentContestants .country-checkbox'));
+                const unchecked = allCurrentBoxes.filter(cb => !cb.checked);
+                // Fisher-Yates shuffle so each fill is different
+                for (let i = unchecked.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [unchecked[i], unchecked[j]] = [unchecked[j], unchecked[i]];
+                }
+                let totalSelected = document.querySelectorAll('.country-checkbox:checked').length;
+                for (const cb of unchecked) {
+                    if (totalSelected >= MIN_FOR_AQ) break;
+                    cb.checked = true;
+                    totalSelected++;
+                }
+
+                // Step 3: refresh AQ enabled state, then force-mark Big 5 + Host as AQ.
+                updateAQCheckboxStatus();
+                aqTargetCheckboxes.forEach(cb => {
+                    const td = cb.closest('td');
+                    const aqCb = td?.querySelector('.aq-checkbox');
+                    if (aqCb) {
+                        // Defensive: AQ should now be enabled, but enable it just in case
+                        aqCb.disabled = false;
+                        aqCb.checked = true;
+                    }
+                });
+
+                let msg = '';
+                if (notFound.length) {
+                    msg += `Could not find ${notFound.length} target(s): ${notFound.join(', ')}\n`;
+                    msg += '(Make sure the host name matches an entry in one of the country lists exactly.)\n\n';
+                }
+                msg += `Auto-qualifiers set: ${aqTargetCheckboxes.length}\n`;
+                msg += `Total countries selected: ${totalSelected}`;
+                if (totalSelected < MIN_FOR_AQ) {
+                    msg += `\n\n⚠️ Not enough current contestants available to reach ${MIN_FOR_AQ}. ` +
+                        `Add more from other regions/old/custom tables to enable AQ.`;
+                }
+                alert(msg);
+            });
+
+
+            // ---- Random ESC ----
+            // Selects 26 random current-contestant rows, randomizes odds/genres/scenographies.
+            document.getElementById('randomEscButton').addEventListener('click', () => {
+                // Clear any existing selections first
+                document.querySelectorAll('.country-checkbox').forEach(cb => { cb.checked = false; });
+                document.querySelectorAll('.aq-checkbox').forEach(cb => { cb.checked = false; });
+
+                const currentCheckboxes = Array.from(
+                    document.querySelectorAll('#currentContestants .country-checkbox')
+                );
+                if (currentCheckboxes.length === 0) {
+                    alert('Country list is still loading. Try again in a moment.');
+                    return;
+                }
+                // Pick min(26, available)
+                const target = Math.min(26, currentCheckboxes.length);
+                const shuffled = [...currentCheckboxes];
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+                shuffled.slice(0, target).forEach(cb => { cb.checked = true; });
+
+                // Randomize odds/genres/scenographies via existing helpers
+                if (document.getElementById('randomizeButton')) {
+                    document.getElementById('randomizeButton').click();
+                }
+                randomizeGenres();
+                randomizeScenographies();
+                updateAQCheckboxStatus();
+            });
+
+
+            // ---- Export CSV ----
+            function buildResultsCsv() {
+                if (!finalResults || !finalResults.results) return null;
+                const { results } = finalResults;
+                const competing = Object.keys(results).filter(c => results[c].isCompeting);
+                competing.sort((a, b) => {
+                    const tA = results[a].juryTotal + results[a].teleTotal;
+                    const tB = results[b].juryTotal + results[b].teleTotal;
+                    if (tA !== tB) return tB - tA;
+                    if (results[a].teleTotal !== results[b].teleTotal) return results[b].teleTotal - results[a].teleTotal;
+                    return tiebreaker(results[a], results[b]);
+                });
+                const headers = ['Rank', 'Country', 'Song Title', 'Artist', 'Language', 'Genre', 'Scenography', 'Jury Points', 'Tele Points', 'Total Points'];
+                const escape = v => {
+                    const s = (v === null || v === undefined) ? '' : String(v);
+                    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+                };
+                const lines = [headers.join(',')];
+                competing.forEach((c, i) => {
+                    const r = results[c];
+                    lines.push([
+                        i + 1, c, r.songTitle, r.artistName, r.language,
+                        r.genre, r.scenography, r.juryTotal, r.teleTotal,
+                        r.juryTotal + r.teleTotal
+                    ].map(escape).join(','));
+                });
+                return lines.join('\n');
+            }
+            document.getElementById('exportCsvButton').addEventListener('click', () => {
+                const csv = buildResultsCsv();
+                if (!csv) {
+                    alert('Generate the contest first — there are no results to export yet.');
+                    return;
+                }
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                const today = new Date().toISOString().slice(0, 10);
+                a.download = `eurovision_results_${today}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+
+
+            // ---- Export PNG (uses html2canvas from CDN) ----
+            document.getElementById('exportPngButton').addEventListener('click', async () => {
+                if (typeof html2canvas !== 'function') {
+                    alert('html2canvas failed to load (offline?). Cannot export to PNG.');
+                    return;
+                }
+                // Pick the most relevant visible target: results, then dynamicVotingArea, then chartContainer.
+                const candidates = [resultsDiv, dynamicVotingArea, chartContainer];
+                const target = candidates.find(el => el && el.children.length > 0 && el.offsetWidth > 0);
+                if (!target) {
+                    alert('Nothing visible to export yet. Generate or open a results view first.');
+                    return;
+                }
+                try {
+                    const canvas = await html2canvas(target, { backgroundColor: '#ffffff', scale: 2 });
+                    canvas.toBlob(blob => {
+                        if (!blob) { alert('Could not create PNG.'); return; }
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        const today = new Date().toISOString().slice(0, 10);
+                        a.download = `eurovision_results_${today}.png`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    }, 'image/png');
+                } catch (err) {
+                    console.error('PNG export error:', err);
+                    alert('PNG export failed: ' + err.message);
+                }
+            });
+
+
+            // ---- Share via URL ----
+            // Encodes the current scenario as base64 in location.hash. On load, if a hash
+            // is present, decode and apply via applyScenarioData().
+            function encodeScenarioToHash() {
+                try {
+                    const scenario = collectScenarioData();
+                    const json = JSON.stringify(scenario);
+                    // Use a URI-safe variant of base64
+                    const b64 = btoa(unescape(encodeURIComponent(json)))
+                        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+                    return b64;
+                } catch (err) {
+                    console.error('encodeScenarioToHash:', err);
+                    return null;
+                }
+            }
+            function decodeScenarioFromHash(hash) {
+                try {
+                    if (!hash || !hash.startsWith('s=')) return null;
+                    const b64 = hash.slice(2).replace(/-/g, '+').replace(/_/g, '/');
+                    const padded = b64 + '==='.slice((b64.length + 3) % 4);
+                    const json = decodeURIComponent(escape(atob(padded)));
+                    return JSON.parse(json);
+                } catch (err) {
+                    console.error('decodeScenarioFromHash:', err);
+                    return null;
+                }
+            }
+            document.getElementById('shareLinkButton').addEventListener('click', async () => {
+                const selectedCount = document.querySelectorAll('.country-checkbox:checked').length;
+                if (selectedCount === 0) {
+                    alert('Select at least one country first.');
+                    return;
+                }
+                const hashPayload = encodeScenarioToHash();
+                if (!hashPayload) {
+                    alert('Could not encode the current scenario.');
+                    return;
+                }
+                const url = `${location.origin}${location.pathname}#s=${hashPayload}`;
+                try {
+                    await navigator.clipboard.writeText(url);
+                    alert(`Share link copied to clipboard! (${url.length} characters)\n\nAnyone who opens this URL will see the same simulation setup.`);
+                } catch (err) {
+                    // Fallback: show in a prompt so user can copy manually
+                    prompt('Copy this share URL:', url);
+                }
+            });
+            // On page load, try to apply scenario from URL hash if present.
+            (function applyScenarioFromHashOnLoad() {
+                if (!location.hash || location.hash.length < 3) return;
+                // Wait until data.json has finished loading and country tables exist.
+                const trySetup = (attempts = 0) => {
+                    if (document.querySelectorAll('.country-checkbox').length === 0) {
+                        if (attempts < 50) return setTimeout(() => trySetup(attempts + 1), 100);
+                        console.warn('Could not apply shared scenario: country tables never loaded.');
+                        return;
+                    }
+                    const scenario = decodeScenarioFromHash(location.hash.slice(1));
+                    if (scenario) {
+                        applyScenarioData(scenario);
+                        console.log('✅ Applied scenario from share URL.');
+                    }
+                };
+                trySetup();
+            })();
+
+
+            // ---- Sortable table headers ----
+            // Generic helper: turns every <th> in the given table into a click-to-sort
+            // toggle. Numeric columns are detected automatically. Adds an indicator
+            // arrow to the active column. Idempotent — safe to call multiple times.
+            function makeTableSortable(table) {
+                if (!table || table.dataset.sortableInitialized === '1') return;
+                table.dataset.sortableInitialized = '1';
+                const tbody = table.tBodies[0];
+                if (!tbody) return;
+                const headers = table.tHead ? table.tHead.rows[0]?.cells : null;
+                if (!headers) return;
+                Array.from(headers).forEach((th, colIndex) => {
+                    th.style.cursor = 'pointer';
+                    th.title = (th.title || '') + ' (click to sort)';
+                    th.addEventListener('click', () => {
+                        const rows = Array.from(tbody.rows);
+                        if (rows.length < 2) return;
+                        // Determine direction: toggle on every click of the same column.
+                        const currentDir = table.dataset.sortCol === String(colIndex)
+                            ? (table.dataset.sortDir === 'asc' ? 'desc' : 'asc')
+                            : 'asc';
+                        table.dataset.sortCol = String(colIndex);
+                        table.dataset.sortDir = currentDir;
+                        const dir = currentDir === 'asc' ? 1 : -1;
+
+                        // Try numeric first, fall back to locale string compare
+                        const cellValue = (row) => {
+                            const c = row.cells[colIndex];
+                            if (!c) return '';
+                            return c.textContent.trim();
+                        };
+                        const isNumericColumn = rows.every(r => {
+                            const v = cellValue(r).replace(/[,\s]/g, '');
+                            return v === '' || !Number.isNaN(parseFloat(v));
+                        });
+
+                        rows.sort((a, b) => {
+                            const va = cellValue(a);
+                            const vb = cellValue(b);
+                            if (isNumericColumn) {
+                                const na = parseFloat(va.replace(/[,\s]/g, '')) || 0;
+                                const nb = parseFloat(vb.replace(/[,\s]/g, '')) || 0;
+                                return (na - nb) * dir;
+                            }
+                            return va.localeCompare(vb) * dir;
+                        });
+                        rows.forEach(r => tbody.appendChild(r));
+
+                        // Update arrows on headers
+                        Array.from(headers).forEach(h => h.dataset.sortArrow = '');
+                        th.dataset.sortArrow = currentDir === 'asc' ? '▲' : '▼';
+                        Array.from(headers).forEach(h => {
+                            const base = h.textContent.replace(/\s*[▲▼]\s*$/, '');
+                            h.textContent = h.dataset.sortArrow ? `${base} ${h.dataset.sortArrow}` : base;
+                        });
+                    });
+                });
+            }
+            // Watch resultsDiv / chartContainer / dynamicVotingArea for new tables and make
+            // them sortable automatically.
+            (function setupTableObserver() {
+                const observer = new MutationObserver(() => {
+                    document.querySelectorAll('#results .eurovision-table, #chartContainer .eurovision-table, #dynamicVotingArea .eurovision-table')
+                        .forEach(makeTableSortable);
+                });
+                ['results', 'chartContainer', 'dynamicVotingArea'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) observer.observe(el, { childList: true, subtree: true });
+                });
+            })();
+
+
+            // ---- Enable Export buttons once results exist ----
+            // Watches the global finalResults state via a small observer pattern: we
+            // simply re-check after every Generate/reset event by listening to the
+            // existing buttons.
+            const exportCsvBtn = document.getElementById('exportCsvButton');
+            const exportPngBtn = document.getElementById('exportPngButton');
+            function refreshExportButtons() {
+                const hasResults = !!(finalResults && finalResults.results);
+                exportCsvBtn.disabled = !hasResults;
+                exportPngBtn.disabled = !hasResults;
+            }
+            // Hook into existing buttons to refresh state
+            generateButton.addEventListener('click', () => setTimeout(refreshExportButtons, 1100));
+            document.getElementById('resetButton').addEventListener('click', () => setTimeout(refreshExportButtons, 50));
 
 
 
