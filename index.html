@@ -9,6 +9,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
     <style>
         :root {
             --main-background: linear-gradient(135deg, #1e5799 0%, #2989d8 50%, #207cca 51%, #7db9e8 100%);
@@ -150,9 +153,6 @@
             --accordion-bg: #444;
             --accordion-header-bg: #555;
             --accordion-header-text: #e0e0e0;
-            --text-color: #ffffff;
-            --input-text: #999999;
-            --chart-text-color: #ffffff;
         }
 
         body {
@@ -169,6 +169,17 @@
             color: var(--heading-color);
             font-size: 3rem;
             text-shadow: 2px 2px 4px var(--text-shadow);
+        }
+
+        .menu-card {
+            position: sticky;
+            top: 8px;
+            z-index: 100;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .menu-card.is-stuck {
+            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.25);
         }
 
         .menu-card,
@@ -202,8 +213,8 @@
             display: flex;
             flex-wrap: wrap;
             align-items: center;
-            gap: 4px;
-            padding: 10px 0;
+            gap: 6px;
+            padding: 12px 0;
             border-bottom: 1px solid rgba(0, 0, 0, 0.08);
         }
 
@@ -220,12 +231,13 @@
             display: inline-flex;
             align-items: center;
             text-transform: uppercase;
-            font-size: 0.75rem;
-            letter-spacing: 0.08em;
+            font-size: 0.7rem;
+            letter-spacing: 0.1em;
             color: var(--settings-h2-color);
-            margin: 0 10px 0 0;
-            font-weight: 700;
-            min-width: 130px;
+            margin: 0 12px 0 0;
+            font-weight: 800;
+            min-width: 120px;
+            opacity: 0.8;
         }
 
         .menu-section-title i {
@@ -245,21 +257,24 @@
             margin-bottom: 0;
         }
 
-        /* Hero "GENERATE" button: it's the primary action, make it pop */
+        /* Hero "GENERATE" button: cleaner gold gradient with animated glow */
         .menu-btn-hero {
-            padding: 12px 20px !important;
-            font-size: 1.1rem !important;
-            letter-spacing: 0.05em;
-            background: linear-gradient(135deg, #2989d8 0%, #FFD700 100%) !important;
+            padding: 14px 28px !important;
+            font-size: 1.15rem !important;
+            letter-spacing: 0.06em;
+            font-weight: 700 !important;
+            background: linear-gradient(135deg, #f5a623 0%, #f7c948 50%, #ffd700 100%) !important;
             border: none !important;
-            color: #fff !important;
-            box-shadow: 0 4px 14px rgba(255, 215, 0, 0.35);
+            color: #1a1a2e !important;
+            box-shadow: 0 4px 20px rgba(245, 166, 35, 0.4);
             flex-grow: 1;
+            transition: all 0.3s ease;
         }
 
         .menu-btn-hero:hover {
-            background: linear-gradient(135deg, #207cca 0%, #ffcc00 100%) !important;
-            box-shadow: 0 6px 18px rgba(255, 215, 0, 0.5);
+            background: linear-gradient(135deg, #e6951a 0%, #f5b830 50%, #f7c948 100%) !important;
+            box-shadow: 0 6px 28px rgba(245, 166, 35, 0.6), 0 0 40px rgba(255, 215, 0, 0.25);
+            transform: translateY(-2px);
         }
 
         /* Status badge for #selectedCount: color changes based on country count */
@@ -333,18 +348,38 @@
             border-collapse: separate;
             border-spacing: 0;
             border: 2px solid var(--table-border);
-            border-radius: 8px;
+            border-radius: 10px;
             overflow: hidden;
+            font-size: 0.92rem;
         }
 
         .selection-table th,
         .selection-table td {
             border: 1px solid var(--table-cell-border);
-            padding: 8px;
+            padding: 10px 10px;
+            vertical-align: middle;
         }
 
-        .selection-table tr:hover {
+        .selection-table th {
+            background: var(--table-header-bg);
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .selection-table tbody tr:nth-child(even) {
+            background: var(--table-row-even);
+        }
+
+        .selection-table tbody tr:nth-child(odd) {
+            background: var(--table-row-odd);
+        }
+
+        .selection-table tbody tr:hover {
             background-color: var(--table-row-hover);
+            outline: 2px solid #f5a623;
+            outline-offset: -2px;
         }
 
         .eurovision-table {
@@ -507,7 +542,11 @@
         }
 
         .country-checkbox {
-            margin-right: 5px;
+            width: 18px;
+            height: 18px;
+            margin-right: 8px;
+            accent-color: #f5a623;
+            cursor: pointer;
         }
 
         .aq-checkbox {
@@ -674,6 +713,13 @@
             margin-top: 20px;
         }
 
+        #leaderboardTable table {
+            margin-bottom: 0;
+        }
+        #leaderboardTable .flag-icon {
+            margin-right: 6px;
+        }
+
         .genre-select {
             width: 100px;
         }
@@ -755,17 +801,26 @@
 
         .accordion .accordion-item {
             background-color: var(--accordion-bg);
+            border: 1px solid var(--table-cell-border);
+            border-radius: 8px;
+            margin-bottom: 4px;
+            overflow: hidden;
         }
 
         .accordion .accordion-header {
             background-color: var(--accordion-header-bg);
             color: var(--accordion-header-text);
-            padding: 10px;
-            cursor: pointer;
         }
 
-        .accordion .accordion-header:hover {
+        .accordion .accordion-button {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .accordion .accordion-button:not(.collapsed) {
             background-color: var(--accordion-header-bg);
+            color: var(--accordion-header-text);
+            box-shadow: none;
         }
 
         .accordion .accordion-collapse {
@@ -918,6 +973,7 @@
                             <button id="instructionsButton" class="btn btn-outline-info btn-sm" title="How does this simulator work?"><i class="bi bi-question-circle"></i>Help</button>
                             <button id="whatsNewButton" class="btn btn-outline-warning btn-sm" title="See what's new in the latest version"><i class="bi bi-megaphone-fill"></i>What's new</button>
                             <button id="toggleDarkMode" class="btn btn-outline-secondary btn-sm" title="Toggle light/dark theme"><i class="bi bi-moon-stars-fill"></i>Dark mode</button>
+                            <button id="toggleLeaderboardBtn" class="btn btn-outline-success btn-sm" title="Show/hide global leaderboard"><i class="bi bi-trophy-fill"></i>Leaderboard</button>
                         </div>
 
                         <!-- Run simulation: hero action -->
@@ -973,9 +1029,8 @@
             <div class="col-md-12">
                 <div class="card settings-card">
                     <div class="card-body">
-                        <h5>V.1.3.0</h5>
                         <h2>Select Participating Countries and Set Odds<br> (11-50 countries semi-finals starting with
-                            27, odds -> lower is better):</h2>
+                            27, odds → lower is better):</h2>
                         <h3 id="selectedCount" class="status-empty">Total Selected Countries: 0/50</h3>
                         <div class="row mb-2">
                             <div class="col-md-6">
@@ -1357,11 +1412,291 @@
                 </div>
             </div>
 
+            <!-- Global Leaderboard -->
+        <div class="row mb-4" id="leaderboardRow" style="display: none;">
+            <div class="col-12">
+                <div class="card settings-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h2 style="margin:0;">🏆 Global Leaderboard</h2>
+                            <div>
+                                <span class="badge bg-secondary me-2" id="totalSimsBadge">0 simulations</span>
+                                <button id="refreshLeaderboardBtn" class="btn btn-outline-primary btn-sm"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+                            </div>
+                        </div>
+                        <small class="text-muted">Top 10 countries by wins across all simulations worldwide</small>
+                        <div id="leaderboardTable" class="mt-3" style="max-height: 420px; overflow-y: auto;">
+                            <div class="text-center text-muted py-4">Loading leaderboard…</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
             <div id="chartContainer" class="mt-4"></div>
             <div id="results" class="mt-4"></div>
         </div>
 
+        <template id="tpl-country-row">
+            <tr>
+                <td>
+                    <div class="checkbox-container">
+                        <input class="form-check-input country-checkbox" type="checkbox">
+                        <span class="aq-label">AQ</span>
+                        <input class="aq-checkbox" type="checkbox" title="Auto-qualifier">
+                        <span class="country-name"></span>
+                    </div>
+                    <div class="odds-inputs">
+                        <input type="number" class="form-control jury-odds-input" min="1" max="500" value="100" placeholder="Jury Odds">
+                        <input type="number" class="form-control tele-odds-input" min="1" max="500" value="100" placeholder="Tele Odds">
+                    </div>
+                    <select class="genre-select"></select>
+                    <select class="scenography-select"></select>
+                    <div class="song-info-inputs mt-2">
+                        <input type="text" class="form-control song-title-input" placeholder="Song Title (optional)" style="font-size: 0.85em; margin-bottom: 3px;">
+                        <input type="text" class="form-control artist-name-input" placeholder="Artist Name (optional)" style="font-size: 0.85em; margin-bottom: 3px;">
+                        <select class="form-control language-select" style="font-size: 0.85em;">
+                            <option value="">Language (optional)</option>
+                            <option value="English">English</option>
+                            <option value="Native">Native Language</option>
+                            <option value="French">French</option>
+                            <option value="Italian">Italian</option>
+                            <option value="Spanish">Spanish</option>
+                            <option value="German">German</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </td>
+            </tr>
+        </template>
+        <template id="tpl-result-row">
+            <tr>
+                <td class="rank-col"></td>
+                <td style="text-align: right;"><span class="country-label"></span><span class="flag-icon ml-2"></span></td>
+                <td style="font-style: italic;" class="song-col">-</td>
+                <td class="artist-col">-</td>
+                <td class="lang-col">-</td>
+                <td class="genre-col"></td>
+                <td class="sceno-col">Minimal</td>
+                <td class="points jury-pts-col"></td>
+                <td class="points tele-pts-col"></td>
+                <td class="points total-pts-col"></td>
+                <td class="placement jury-place-col"></td>
+                <td class="placement tele-place-col"></td>
+            </tr>
+        </template>
+        <template id="tpl-voting-chart">
+            <div class="table-responsive">
+                <table class="table table-striped eurovision-table">
+                    <thead><tr><th class="recv-header">Receiving Country</th><th>Song Title</th><th>Artist</th><th>Language</th><th>Genre</th><th class="voter-headers"></th><th>Total</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </template>
+        <template id="tpl-voter-header">
+            <th class="rotate-header"><div class="country-name"></div><div class="flag-container"><span class="flag-icon"></span></div></th>
+        </template>
+        <template id="tpl-chart-row">
+            <tr>
+                <td class="receiving-country"><span class="recv-name"></span><span class="flag-icon"></span></td>
+                <td style="font-style: italic;" class="song-col">-</td>
+                <td class="artist-col">-</td>
+                <td class="lang-col">-</td>
+                <td class="genre-col"></td>
+                <td class="vote-cells"></td>
+                <td class="total-column"></td>
+            </tr>
+        </template>
+        <template id="tpl-dyn-esc-table">
+            <div>
+            <h2>Dynamic ESC Voting Simulation</h2>
+            <div id="votingHeader" style="font-size: 1.5em; font-weight: bold; margin-bottom: 10px; text-align: center;"></div>
+            <div class="row" id="tableContainer">
+                <div class="col-md-6 table-column" id="leftTable"><div class="table-responsive"><table class="table table-striped eurovision-table" id="topHalfTable"><thead><tr><th>Rank</th><th>Receiving Country</th><th>Song Title</th><th>Artist</th><th>Language</th><th>Genre</th><th class="current-jury-header">Current Jury</th><th>Jury Points</th><th>Televoting</th><th>Total</th></tr></thead><tbody></tbody></table></div></div>
+                <div class="col-md-6 table-column" id="rightTable"><div class="table-responsive"><table class="table table-striped eurovision-table" id="bottomHalfTable"><thead><tr><th>Rank</th><th>Receiving Country</th><th>Song Title</th><th>Artist</th><th>Language</th><th>Genre</th><th class="current-jury-header">Current Jury</th><th>Jury Points</th><th>Televoting</th><th>Total</th></tr></thead><tbody></tbody></table></div></div>
+            </div>
+            <button id="nextVoteButton" class="btn btn-primary mt-3 reveal-button">Next Vote</button>
+            </div>
+        </template>
+        <template id="tpl-dyn-esc-row">
+            <tr data-country="">
+                <td class="rank"></td>
+                <td class="receiving-country"><span class="cname"></span><span class="flag-icon"></span></td>
+                <td style="font-style: italic;" class="song-col">-</td>
+                <td class="artist-col">-</td>
+                <td class="lang-col">-</td>
+                <td class="genre"></td>
+                <td class="current-jury"></td>
+                <td class="jury-points">0</td>
+                <td class="tele-points">0</td>
+                <td class="total-column">0</td>
+            </tr>
+        </template>
+        <template id="tpl-dyn-voting-table">
+            <div>
+            <h2>Dynamic Voting Simulation</h2>
+            <div class="table-responsive"><table class="table table-striped eurovision-table"><thead><tr><th>Rank</th><th>Receiving Country</th><th>Song Title</th><th>Artist</th><th>Language</th><th>Genre</th><th>Jury Points</th><th class="voter-headers-dyn"></th><th>Televoting</th><th>Total</th></tr></thead><tbody></tbody></table></div>
+            <button id="nextJuryButton" class="btn btn-primary mt-3 reveal-button">Reveal Next Jury</button>
+            <button id="revealTelevotingButton" class="btn btn-success mt-3 reveal-button" style="display: none;">Reveal Televoting</button>
+            <div id="debugInfo" class="mt-3"></div>
+            </div>
+        </template>
+        <template id="tpl-dyn-voting-row">
+            <tr data-country="">
+                <td class="rank"></td>
+                <td class="receiving-country"><span class="cname"></span><span class="flag-icon"></span></td>
+                <td style="font-style: italic;" class="song-col">-</td>
+                <td class="artist-col">-</td>
+                <td class="lang-col">-</td>
+                <td class="genre"></td>
+                <td class="jury-points">0</td>
+                <td class="vote-cells-dyn"></td>
+                <td class="tele-points">0</td>
+                <td class="total-column">0</td>
+            </tr>
+        </template>
+
+        <footer class="text-center mt-4 pb-3" style="color: var(--chart-text-color); opacity: 0.6; font-size: 0.8rem;">
+            Eurovision Simulator &mdash; v1.3.0
+        </footer>
+    </div>
+
         <script>
+            (() => {
+            // ===== FIREBASE INIT =====
+            const firebaseConfig = {
+                apiKey: "AIzaSyDm3zZwNifczN6wesBJNqsM9aA8-2LOd7Q",
+                authDomain: "eurovision-simulator.firebaseapp.com",
+                projectId: "eurovision-simulator",
+                storageBucket: "eurovision-simulator.firebasestorage.app",
+                messagingSenderId: "619727891514",
+                appId: "1:619727891514:web:cb8e0ca1351cb7e0acd903"
+            };
+            firebase.initializeApp(firebaseConfig);
+            const db = firebase.firestore();
+
+            // ===== ANTI-SPAM: cooldown =====
+            const SUBMIT_COOLDOWN_MS = 30000; // 30 seconds between submissions
+            function canSubmit() {
+                const lastSubmit = localStorage.getItem('esc_last_submit_ts');
+                if (!lastSubmit) return true;
+                const elapsed = Date.now() - parseInt(lastSubmit);
+                if (elapsed < SUBMIT_COOLDOWN_MS) {
+                    const remaining = Math.ceil((SUBMIT_COOLDOWN_MS - elapsed) / 1000);
+                    alert(`⏳ Cooldown: wait ${remaining}s before submitting again.`);
+                    return false;
+                }
+                return true;
+            }
+            function markSubmitted() {
+                localStorage.setItem('esc_last_submit_ts', Date.now().toString());
+            }
+
+            // ===== SAVE RESULT TO FIRESTORE =====
+            async function saveResultToFirebase(winner, countryCount, votingSystem) {
+                if (!canSubmit()) return false;
+                try {
+                    await db.collection('simulations').add({
+                        winner: winner,
+                        countryCount: countryCount,
+                        votingSystem: votingSystem,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                        // Simple client fingerprint to help spot abuse (not sent to other clients)
+                        sessionId: localStorage.getItem('esc_session_id') || 'unknown'
+                    });
+                    markSubmitted();
+                    console.log('✅ Result saved to Firebase:', winner);
+                    return true;
+                } catch (err) {
+                    console.error('❌ Firebase save failed:', err);
+                    return false;
+                }
+            }
+
+            // ===== LOAD LEADERBOARD FROM FIRESTORE =====
+            async function loadLeaderboard() {
+                const container = document.getElementById('leaderboardTable');
+                const badge = document.getElementById('totalSimsBadge');
+                try {
+                    // Get total simulation count
+                    const countSnap = await db.collection('simulations').count().get();
+                    const totalSims = countSnap.data().count;
+                    badge.textContent = totalSims + ' simulations';
+
+                    // Get top 10 winners using a composite query
+                    // Firestore doesn't support GROUP BY, so we fetch recent results and aggregate client-side
+                    // For production with huge data, use a Cloud Function to maintain a counters collection
+                    const snap = await db.collection('simulations')
+                        .orderBy('timestamp', 'desc')
+                        .limit(1000)
+                        .get();
+
+                    const winCounts = {};
+                    snap.forEach(doc => {
+                        const w = doc.data().winner;
+                        winCounts[w] = (winCounts[w] || 0) + 1;
+                    });
+
+                    const sorted = Object.entries(winCounts)
+                        .sort(([, a], [, b]) => b - a)
+                        .slice(0, 10);
+
+                    if (sorted.length === 0) {
+                        container.innerHTML = '<div class="text-center text-muted py-4">No simulations yet — be the first!</div>';
+                        return;
+                    }
+
+                    let html = '<table class="table table-striped eurovision-table"><thead><tr><th>#</th><th>Country</th><th>Wins</th><th>Win Rate</th></tr></thead><tbody>';
+                    sorted.forEach(([country, wins], i) => {
+                        const rate = totalSims > 0 ? ((wins / totalSims) * 100).toFixed(1) : '0.0';
+                        const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '';
+                        html += `<tr>
+                            <td><strong>${i + 1}</strong> ${medal}</td>
+                            <td><span class="flag-icon flag-icon-${getCountryCode(country)} mr-2"></span>${country}</td>
+                            <td><strong>${wins}</strong></td>
+                            <td>${rate}%</td>
+                        </tr>`;
+                    });
+                    html += '</tbody></table>';
+                    html += `<small class="text-muted">Based on last ${snap.size} simulations</small>`;
+                    container.innerHTML = html;
+                } catch (err) {
+                    console.error('❌ Leaderboard load failed:', err);
+                    container.innerHTML = '<div class="text-center text-danger py-4">Failed to load leaderboard. Check Firebase config.</div>';
+                }
+            }
+
+            // Generate a persistent session ID
+            if (!localStorage.getItem('esc_session_id')) {
+                localStorage.setItem('esc_session_id', 'sess_' + Math.random().toString(36).substr(2, 9));
+            }
+
+            // ===== CENTRAL STATE =====
+            const state = {
+                currentContestants: [],
+                oldContestants: [],
+                restEuropeContestants: [],
+                northAmericaContestants: [],
+                southAmericaContestants: [],
+                africaContestants: [],
+                asiaContestants: [],
+                oceaniaContestants: [],
+                customContestants: [],
+                customContestantsFlag: [],
+                customcountryCodeMap: {},
+                genres: [],
+                scenographies: [],
+                genreLikeability: {},
+                scenographyLikeability: {},
+                contestantLists: {},
+                countryCodeMapData: {},
+                semiFinal1Results: null,
+                semiFinal2Results: null,
+                finalResults: null,
+                currentSemiFinal: 1,
+                selectedVotingSystem: 'current'
+            };
+
             // Dark mode toggle
             const toggleButton = document.getElementById('toggleDarkMode');
             function updateToggleButton() {
@@ -1402,107 +1737,67 @@
             // creating a duplicate element with the same id.
             const chartContainer = document.getElementById('chartContainer');
 
-            // Data will be loaded from data.json
-            let currentContestants = [];
-            let oldContestants = [];
-            let restEuropeContestants = [];
-            let northAmericaContestants = [];
-            let southAmericaContestants = [];
-            let africaContestants = [];
-            let asiaContestants = [];
-            let oceaniaContestants = [];
-            var customContestants = [];
-            var customContestantsFlag = [];
-            let genres = [];
-            let scenographies = [];
-            let genreLikeability = {};
-            let scenographyLikeability = {};
-            let contestantLists = {};
-            let countryCodeMapData = {};
+            // Data will be loaded from data.json into state
 
             function randomizeGenreLikeability() {
-                genres.forEach(genre => {
-                    genreLikeability[genre] = Math.floor(Math.random() * 5) + 1;
+                state.genres.forEach(genre => {
+                    state.genreLikeability[genre] = Math.floor(Math.random() * 5) + 1;
                 });
                 updateGenreLikeabilityUI();
             }
 
             function updateGenreLikeabilityUI() {
                 document.querySelectorAll('.genre-likeability').forEach(input => {
-                    input.value = genreLikeability[input.dataset.genre];
+                    input.value = state.genreLikeability[input.dataset.genre];
                 });
             }
 
             function randomizeScenographyLikeability() {
-                scenographies.forEach(scenography => {
-                    scenographyLikeability[scenography] = Math.floor(Math.random() * 5) + 1;
+                state.scenographies.forEach(scenography => {
+                    state.scenographyLikeability[scenography] = Math.floor(Math.random() * 5) + 1;
                 });
                 updateScenographyLikeabilityUI();
             }
 
             function updateScenographyLikeabilityUI() {
                 document.querySelectorAll('.scenography-likeability').forEach(input => {
-                    input.value = scenographyLikeability[input.dataset.scenography];
+                    input.value = state.scenographyLikeability[input.dataset.scenography];
                 });
             }
 
             document.getElementById('randomizeGenreLikeabilityButton').addEventListener('click', randomizeGenreLikeability);
 
-            var customcountryCodeMap = {}
-
             function getCountryCode(countryName) {
-                return (countryCodeMapData[countryName] || customcountryCodeMap[countryName]) || "unknown";
+                return (state.countryCodeMapData[countryName] || state.customcountryCodeMap[countryName]) || "unknown";
             }
 
             function createCountryTable(containerId, countries) {
                 const container = document.getElementById(containerId);
-                let html = '';
+                const tpl = document.getElementById('tpl-country-row');
+                const genreOptions = state.genres.map(g => `<option value="${g}">${g}</option>`).join('');
+                const scenoOptions = state.scenographies.map(s => `<option value="${s}">${s}</option>`).join('');
+                container.innerHTML = '';
+                const frag = document.createDocumentFragment();
                 for (let i = 0; i < countries.length; i += 3) {
-                    html += '<tr>';
+                    const row = document.createElement('tr');
                     for (let j = i; j < Math.min(i + 3, countries.length); j++) {
-                        html += `
-                <td>
-                    <div class="checkbox-container">
-                        <input class="form-check-input country-checkbox" type="checkbox" value="${countries[j]}">
-                        <span class="aq-label">AQ</span>
-                        <input class="aq-checkbox" type="checkbox" value="${countries[j]}" title="Auto-qualifier">
-                        <span class="country-name">
-                            ${countries[j]}
-                            <span class="flag-icon flag-icon-${getCountryCode(countries[j])} ml-2"></span>
-                        </span>
-                    </div>
-                    <div class="odds-inputs">
-                        <input type="number" class="form-control jury-odds-input" min="1" max="500" value="100" placeholder="Jury Odds">
-                        <input type="number" class="form-control tele-odds-input" min="1" max="500" value="100" placeholder="Tele Odds">
-                    </div>
-                    <select class="genre-select">
-                        ${genres.map(genre => `<option value="${genre}">${genre}</option>`).join('')}
-                    </select>
-                    <select class="scenography-select">
-                        ${scenographies.map(scenography => `<option value="${scenography}">${scenography}</option>`).join('')}
-                    </select>
-                    <div class="song-info-inputs mt-2">
-                        <input type="text" class="form-control song-title-input" placeholder="Song Title (optional)" style="font-size: 0.85em; margin-bottom: 3px;">
-                        <input type="text" class="form-control artist-name-input" placeholder="Artist Name (optional)" style="font-size: 0.85em; margin-bottom: 3px;">
-                        <select class="form-control language-select" style="font-size: 0.85em;">
-                            <option value="">Language (optional)</option>
-                            <option value="English">English</option>
-                            <option value="Native">Native Language</option>
-                            <option value="French">French</option>
-                            <option value="Italian">Italian</option>
-                            <option value="Spanish">Spanish</option>
-                            <option value="German">German</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-                </td>
-            `;
+                        const clone = tpl.content.firstElementChild.cloneNode(true);
+                        const td = clone.firstElementChild;
+                        const cb = td.querySelector('.country-checkbox');
+                        cb.value = countries[j];
+                        const aqCb = td.querySelector('.aq-checkbox');
+                        aqCb.value = countries[j];
+                        const nameSpan = td.querySelector('.country-name');
+                        const code = getCountryCode(countries[j]);
+                        nameSpan.innerHTML = `${countries[j]} <span class="flag-icon flag-icon-${code} ml-2"></span>`;
+                        td.querySelector('.genre-select').innerHTML = genreOptions;
+                        td.querySelector('.scenography-select').innerHTML = scenoOptions;
+                        row.appendChild(td);
                     }
-                    html += '</tr>';
+                    frag.appendChild(row);
                 }
-                container.innerHTML = html;
+                container.appendChild(frag);
 
-                // Attach validation listeners to the newly-created inputs
                 container.querySelectorAll('.jury-odds-input, .tele-odds-input').forEach(input => {
                     input.addEventListener('change', validateOddsDifference);
                 });
@@ -1515,48 +1810,44 @@
                     const response = await fetch('data.json');
                     const data = await response.json();
                     
-                    // Assign loaded data to variables
-                    currentContestants = data.currentContestants;
-                    oldContestants = data.oldContestants;
-                    restEuropeContestants = data.restEuropeContestants;
-                    northAmericaContestants = data.northAmericaContestants;
-                    southAmericaContestants = data.southAmericaContestants;
-                    africaContestants = data.africaContestants;
-                    asiaContestants = data.asiaContestants;
-                    oceaniaContestants = data.oceaniaContestants;
-                    genres = data.genres;
-                    scenographies = data.scenographies;
-                    countryCodeMapData = data.countryCodeMap;
-                    ESC_COUNTRIES = data.ESC_COUNTRIES;
-                    AVAILABLE_TAGS = data.AVAILABLE_TAGS;
+                    state.currentContestants = data.currentContestants;
+                    state.oldContestants = data.oldContestants;
+                    state.restEuropeContestants = data.restEuropeContestants;
+                    state.northAmericaContestants = data.northAmericaContestants;
+                    state.southAmericaContestants = data.southAmericaContestants;
+                    state.africaContestants = data.africaContestants;
+                    state.asiaContestants = data.asiaContestants;
+                    state.oceaniaContestants = data.oceaniaContestants;
+                    state.genres = data.genres;
+                    state.scenographies = data.scenographies;
+                    state.countryCodeMapData = data.countryCodeMap;
+                    state.ESC_COUNTRIES = data.ESC_COUNTRIES;
+                    state.AVAILABLE_TAGS = data.AVAILABLE_TAGS;
                     
-                    // Initialize likeability objects
-                    genres.forEach(genre => genreLikeability[genre] = 3);
-                    scenographies.forEach(scenography => scenographyLikeability[scenography] = 3);
+                    state.genres.forEach(genre => state.genreLikeability[genre] = 3);
+                    state.scenographies.forEach(scenography => state.scenographyLikeability[scenography] = 3);
                     
-                    // Consolidate contestant lists
-                    contestantLists = {
-                        currentContestants,
-                        oldContestants,
-                        restEuropeContestants,
-                        northAmericaContestants,
-                        southAmericaContestants,
-                        africaContestants,
-                        asiaContestants,
-                        oceaniaContestants,
-                        customContestants,
+                    state.contestantLists = {
+                        currentContestants: state.currentContestants,
+                        oldContestants: state.oldContestants,
+                        restEuropeContestants: state.restEuropeContestants,
+                        northAmericaContestants: state.northAmericaContestants,
+                        southAmericaContestants: state.southAmericaContestants,
+                        africaContestants: state.africaContestants,
+                        asiaContestants: state.asiaContestants,
+                        oceaniaContestants: state.oceaniaContestants,
+                        customContestants: state.customContestants,
                     };
                     
-                    // Build all country tables
-                    Object.entries(contestantLists).forEach(([tableId, list]) => {
+                    Object.entries(state.contestantLists).forEach(([tableId, list]) => {
                         createCountryTable(tableId, list);
                     });
 
-                    // Attach the change listener now that the checkboxes actually exist.
-                    // Note: addCheckboxListeners is hoisted (function declaration) so it's
-                    // safe to reference here even though it's defined later in the file.
                     document.querySelectorAll('.country-checkbox').forEach(addCheckboxListeners);
                     updateAQCheckboxStatus();
+
+                    // Build genre & scenography likeability inputs (data must be loaded first)
+                    buildLikeabilityUI();
 
                     console.log('✅ Data loaded successfully from data.json');
                 } catch (error) {
@@ -1565,7 +1856,6 @@
                 }
             }
             
-            // Initialize app after data is loaded
             loadData();
 
 
@@ -1604,11 +1894,6 @@
             const selectAllOceaniaButton = document.getElementById('selectAllOceania');
             const unselectAllOceaniaButton = document.getElementById('unselectAllOceania');
             const dynamicESCVotingButton = document.getElementById('dynamicESCVotingButton');
-
-            let semiFinal1Results, semiFinal2Results, finalResults;
-            let currentSemiFinal = 1;
-
-            let selectedVotingSystem = 'current';
 
             //
             // Load participants for a given year from an external API.  This function makes
@@ -1662,22 +1947,22 @@
                     const names = codes.map(code => countriesMap[code] || code);
 
                     // Store the old current contestants
-                    const oldCurrentContestants = contestantLists.currentContestants;
+                    const oldCurrentContestants = state.contestantLists.currentContestants;
 
                     // Set the new current contestants
-                    contestantLists.currentContestants = names;
+                    state.contestantLists.currentContestants = names;
 
                     // Update old contestants
                     // Remove from oldContestants any countries that are now in currentContestants
-                    contestantLists.oldContestants = contestantLists.oldContestants.filter(country => !names.includes(country));
+                    state.contestantLists.oldContestants = state.contestantLists.oldContestants.filter(country => !names.includes(country));
 
                     // Add to oldContestants the countries that were in oldCurrentContestants but not in names
                     const nonParticipants = oldCurrentContestants.filter(country => !names.includes(country));
-                    contestantLists.oldContestants = [...new Set([...contestantLists.oldContestants, ...nonParticipants])];
+                    state.contestantLists.oldContestants = [...new Set([...state.contestantLists.oldContestants, ...nonParticipants])];
 
                     // Rebuild both tables
-                    createCountryTable('currentContestants', contestantLists.currentContestants);
-                    createCountryTable('oldContestants', contestantLists.oldContestants);
+                    createCountryTable('currentContestants', state.contestantLists.currentContestants);
+                    createCountryTable('oldContestants', state.contestantLists.oldContestants);
 
                     // Reattach event listeners only to the freshly rebuilt tables to avoid
                     // accumulating duplicate listeners on the other (untouched) tables.
@@ -1702,26 +1987,26 @@
             document.getElementById('loadParticipantsButton')?.addEventListener('click', loadParticipants);
 
             document.getElementById('votingSystem').addEventListener('change', (e) => {
-                selectedVotingSystem = e.target.value;
+                state.selectedVotingSystem = e.target.value;
             });
 
             function randomizeGenres() {
                 document.querySelectorAll('.genre-select').forEach(select => {
-                    const randomIndex = Math.floor(Math.random() * genres.length);
+                    const randomIndex = Math.floor(Math.random() * state.genres.length);
                     select.selectedIndex = randomIndex;
                 });
             }
 
             function randomizeScenographies() {
                 document.querySelectorAll('.scenography-select').forEach(select => {
-                    const randomIndex = Math.floor(Math.random() * scenographies.length);
+                    const randomIndex = Math.floor(Math.random() * state.scenographies.length);
                     select.selectedIndex = randomIndex;
                 });
             }
 
             function calculateGenreBonus(selectedCountries) {
                 const genreCounts = {};
-                genres.forEach(genre => genreCounts[genre] = 0);
+                state.genres.forEach(genre => genreCounts[genre] = 0);
 
                 selectedCountries.forEach(country => {
                     genreCounts[country.genre]++;
@@ -1790,9 +2075,6 @@
                 });
             });
 
-            // NOTE: Listeners on .jury-odds-input / .tele-odds-input are now attached inside
-            // createCountryTable() right after innerHTML is set, since the inputs don't exist
-            // yet at this point in the script lifecycle (data.json loads asynchronously).
 
             defaultOddsButton.addEventListener('click', () => {
                 document.querySelectorAll('.jury-odds-input, .tele-odds-input').forEach(input => {
@@ -1825,93 +2107,27 @@
                 const topHalf = competingCountries.slice(0, midPoint);
                 const bottomHalf = competingCountries.slice(midPoint);
 
-                let html = `
-        <h2>Dynamic ESC Voting Simulation</h2>
-        <div id="votingHeader" style="font-size: 1.5em; font-weight: bold; margin-bottom: 10px; text-align: center;"></div>
-        <div class="row" id="tableContainer">
-            <div class="col-md-6 table-column" id="leftTable">
-                <div class="table-responsive">
-                    <table class="table table-striped eurovision-table" id="topHalfTable">
-                        <thead>
-                            <tr>
-                                <th>Rank</th>
-                                <th>Receiving Country</th>
-                                <th>Song Title</th>
-                                <th>Artist</th>
-                                <th>Language</th>
-                                <th>Genre</th>
-                                <th class="current-jury-header">Current Jury</th>
-                                <th>Jury Points</th>
-                                <th>Televoting</th>
-                                <th>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${topHalf.map(country => `
-                                <tr data-country="${country}">
-                                    <td class="rank"></td>
-                                    <td class="receiving-country">
-                                        ${country}
-                                        <span class="flag-icon flag-icon-${getCountryCode(country)}"></span>
-                                    </td>
-                                    <td style="font-style: italic;">${results[country].songTitle || '-'}</td>
-                                    <td>${results[country].artistName || '-'}</td>
-                                    <td>${results[country].language || '-'}</td>
-                                    <td class="genre">${results[country].genre}</td>
-                                    <td class="current-jury"></td>
-                                    <td class="jury-points">0</td>
-                                    <td class="tele-points">0</td>
-                                    <td class="total-column">0</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <div class="col-md-6 table-column" id="rightTable">
-                <div class="table-responsive">
-                    <table class="table table-striped eurovision-table" id="bottomHalfTable">
-                        <thead>
-                            <tr>
-                                <th>Rank</th>
-                                <th>Receiving Country</th>
-                                <th>Song Title</th>
-                                <th>Artist</th>
-                                <th>Language</th>
-                                <th>Genre</th>
-                                <th class="current-jury-header">Current Jury</th>
-                                <th>Jury Points</th>
-                                <th>Televoting</th>
-                                <th>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${bottomHalf.map(country => `
-                                <tr data-country="${country}">
-                                    <td class="rank"></td>
-                                    <td class="receiving-country">
-                                        ${country}
-                                        <span class="flag-icon flag-icon-${getCountryCode(country)}"></span>
-                                    </td>
-                                    <td style="font-style: italic;">${results[country].songTitle || '-'}</td>
-                                    <td>${results[country].artistName || '-'}</td>
-                                    <td>${results[country].language || '-'}</td>
-                                    <td class="genre">${results[country].genre}</td>
-                                    <td class="current-jury"></td>
-                                    <td class="jury-points">0</td>
-                                    <td class="tele-points">0</td>
-                                    <td class="total-column">0</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        <button id="nextVoteButton" class="btn btn-primary mt-3 reveal-button">Next Vote</button>
-    `;
+                const escTpl = document.getElementById('tpl-dyn-esc-table');
+                const rowTpl = document.getElementById('tpl-dyn-esc-row');
+                const clone = escTpl.content.firstElementChild.cloneNode(true);
+                dynamicVotingArea.appendChild(clone);
 
-                dynamicVotingArea.innerHTML = html;
+                const fillTable = (tableId, countries) => {
+                    const tbody = document.getElementById(tableId).tBodies[0];
+                    countries.forEach(country => {
+                        const row = rowTpl.content.firstElementChild.cloneNode(true);
+                        row.dataset.country = country;
+                        row.querySelector('.cname').textContent = country;
+                        row.querySelector('.flag-icon').className = `flag-icon flag-icon-${getCountryCode(country)}`;
+                        row.querySelector('.song-col').textContent = results[country].songTitle || '-';
+                        row.querySelector('.artist-col').textContent = results[country].artistName || '-';
+                        row.querySelector('.lang-col').textContent = results[country].language || '-';
+                        row.querySelector('.genre').textContent = results[country].genre;
+                        tbody.appendChild(row);
+                    });
+                };
+                fillTable('topHalfTable', topHalf);
+                fillTable('bottomHalfTable', bottomHalf);
 
                 let currentVotingIndex = 0;
                 let isTelevotingRevealed = false;
@@ -2221,8 +2437,8 @@
             }
 
             document.getElementById('dynamicESCVotingButton').addEventListener('click', () => {
-                if (finalResults) {
-                    simulateDynamicESCVoting(finalResults);
+                if (state.finalResults) {
+                    simulateDynamicESCVoting(state.finalResults);
                 } else {
                     alert('Please generate the contest results first.');
                 }
@@ -2234,79 +2450,35 @@
                 const topHalf = sortedCountries.slice(0, midPoint);
                 const bottomHalf = sortedCountries.slice(midPoint);
 
-                let html = `
-        <h2 class="results-headline">Final Summary</h2>
-        <div class="row">
-            <div class="col-md-6">
-                <table class="table table-striped eurovision-table">
-                    <thead>
-                        <tr>
-                            <th>Rank</th>
-                            <th>Country</th>
-                            <th>Song Title</th>
-                            <th>Total Points</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-    `;
+                const buildTable = (countries, startRank) => {
+                    const table = document.createElement('table');
+                    table.className = 'table table-striped eurovision-table';
+                    table.innerHTML = '<thead><tr><th>Rank</th><th>Country</th><th>Song Title</th><th>Total Points</th></tr></thead><tbody></tbody>';
+                    const tbody = table.tBodies[0];
+                    countries.forEach((country, i) => {
+                        const totalPoints = results[country].juryTotal + results[country].teleTotal;
+                        const rank = String(startRank + i + 1).padStart(2, '0');
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `<td><span class="rank-box">${rank}</span></td><td><span class="flag-icon flag-icon-${getCountryCode(country)}"></span> ${country}</td><td style="font-style:italic;">${results[country].songTitle || '-'}</td><td>${totalPoints}</td>`;
+                        tbody.appendChild(tr);
+                    });
+                    return table;
+                };
 
-                topHalf.forEach((country, index) => {
-                    const totalPoints = results[country].juryTotal + results[country].teleTotal;
-                    const rank = String(index + 1).padStart(2, '0');
-                    html += `
-            <tr>
-                <td><span class="rank-box">${rank}</span></td>
-                <td>
-                    <span class="flag-icon flag-icon-${getCountryCode(country)}"></span>
-                    ${country}
-                </td>
-                <td style="font-style: italic;">${results[country].songTitle || '-'}</td>
-                <td>${totalPoints}</td>
-            </tr>
-        `;
-                });
-
-                html += `
-                    </tbody>
-                </table>
-            </div>
-            <div class="col-md-6">
-                <table class="table table-striped eurovision-table">
-                    <thead>
-                        <tr>
-                            <th>Rank</th>
-                            <th>Country</th>
-                            <th>Song Title</th>
-                            <th>Total Points</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-    `;
-
-                bottomHalf.forEach((country, index) => {
-                    const totalPoints = results[country].juryTotal + results[country].teleTotal;
-                    const rank = String(midPoint + index + 1).padStart(2, '0');
-                    html += `
-            <tr>
-                <td><span class="rank-box">${rank}</span></td>
-                <td>
-                    <span class="flag-icon flag-icon-${getCountryCode(country)}"></span>
-                    ${country}
-                </td>
-                <td style="font-style: italic;">${results[country].songTitle || '-'}</td>
-                <td>${totalPoints}</td>
-            </tr>
-        `;
-                });
-
-                html += `
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    `;
-
-                return html;
+                const wrapper = document.createElement('div');
+                wrapper.innerHTML = '<h2 class="results-headline">Final Summary</h2>';
+                const row = document.createElement('div');
+                row.className = 'row';
+                const left = document.createElement('div');
+                left.className = 'col-md-6';
+                left.appendChild(buildTable(topHalf, 0));
+                const right = document.createElement('div');
+                right.className = 'col-md-6';
+                right.appendChild(buildTable(bottomHalf, midPoint));
+                row.appendChild(left);
+                row.appendChild(right);
+                wrapper.appendChild(row);
+                return wrapper.innerHTML;
             }
 
             const buttonToTableMap = {
@@ -2372,36 +2544,40 @@
                 return result;
             }
 
-            const addCSS = css => document.head.appendChild(document.createElement("style")).innerHTML = css;
+            // Single shared style element for dynamic CSS (custom flags, etc.)
+            const dynamicStyle = document.createElement('style');
+            dynamicStyle.id = 'dynamic-styles';
+            document.head.appendChild(dynamicStyle);
+            const addCSS = css => { dynamicStyle.textContent += css + '\n'; };
 
 
             addCustomContestantButton.addEventListener('click', () => {
-                var con_name = "";
+                let con_name = "";
                 const rawName = document.getElementById('custom_name').value;
 
                 if (rawName.replace(/\s/g, '') !== "") {
                     con_name = rawName.trim().substring(0, 50);
-                    customContestants.push(con_name);
+                    state.customContestants.push(con_name);
                 } else {
                     con_name = String(Date.now()) + Math.floor(Math.random() * 10000);
-                    customContestants.push(con_name);
+                    state.customContestants.push(con_name);
                 }
 
-                var con_code = "";
+                let con_code = "";
                 if (document.getElementById('custom_code').value.replace(/\s/g, '') == "") {
                     con_code = makeid(4)
-                    customcountryCodeMap[con_name] = String(con_code);
+                    state.customcountryCodeMap[con_name] = String(con_code);
                 } else {
                     con_code = document.getElementById('custom_code').value;
-                    customcountryCodeMap[con_name] = String(con_code);
+                    state.customcountryCodeMap[con_name] = String(con_code);
                 }
                 if (document.getElementById('custom_flag').value.replace(/\s/g, '') == "") {
                     //pass
                 } else {
-                    customContestantsFlag.push(document.getElementById('custom_flag').value.replace(/\s/g, ''));
+                    state.customContestantsFlag.push(document.getElementById('custom_flag').value.replace(/\s/g, ''));
                     addCSS(`.flag-icon-${con_code}{ background-image: url("${document.getElementById('custom_flag').value.replace(/\s/g, '')}"); }`)
                 }
-                createCountryTable('customContestants', customContestants);
+                createCountryTable('customContestants', state.customContestants);
                 document.getElementById('custom_name').value = "";
                 document.getElementById('custom_code').value = "";
                 document.getElementById('custom_flag').value = "";
@@ -2433,9 +2609,9 @@
                     return;
                 }
                 console.log(saveList);
-                customContestants = [...customContestants, ...saveList[0]];
-                customcountryCodeMap = { ...customcountryCodeMap, ...saveList[1] };
-                customContestantsFlag = [...customContestantsFlag, ...saveList[2]];
+                state.customContestants = [...state.customContestants, ...saveList[0]];
+                state.customcountryCodeMap = { ...state.customcountryCodeMap, ...saveList[1] };
+                state.customContestantsFlag = [...state.customContestantsFlag, ...saveList[2]];
                 // Map each new contestant name to its code via the saved code map (rather than
                 // relying on the order of Object.keys, which is fragile).
                 for (let i = 0; i < saveList[0].length; i++) {
@@ -2448,14 +2624,14 @@
                 }
 
                 alert("Imported!");
-                createCountryTable('customContestants', customContestants);
+                createCountryTable('customContestants', state.customContestants);
                 document.querySelectorAll('#customContestants .country-checkbox').forEach(addCheckboxListeners);
                 updateAQCheckboxStatus();
             })
 
 
             exportCustomContestantButton.addEventListener('click', async () => {
-                var res = JSON.stringify([customContestants, customcountryCodeMap, customContestantsFlag]);
+                const res = JSON.stringify([state.customContestants, state.customcountryCodeMap, state.customContestantsFlag]);
                 await navigator.clipboard.writeText(res);
                 alert("Exported, and copied to your clipboard. Save this data somewhere so you don't lose it.")
             })
@@ -2465,49 +2641,56 @@
                 document.querySelector('.settings-card').style.display = 'none';
                 resultsDiv.innerHTML = '';
 
-                // Remove any pre-existing simulationArea so we don't end up with duplicate ids
                 const previousSimulationArea = document.getElementById('simulationArea');
                 if (previousSimulationArea) previousSimulationArea.remove();
 
                 const simulationArea = document.createElement('div');
                 simulationArea.id = 'simulationArea';
-                simulationArea.innerHTML = `
-        <div id="timerDisplay" class="mt-3 text-center"></div>
-        <div class="row">
-            <div class="col-md-6">
-                <h3>Semi-Final ${currentSemiFinal} Countries</h3>
-                <table id="semiFinalTable" class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Country</th>
-                            <th>Song Title</th>
-                            <th>Artist</th>
-                            <th>Language</th>
-                            <th>Genre</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-            <div class="col-md-6">
-                <h3>Qualified Countries</h3>
-                <table id="qualifiedTable" class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Country</th>
-                            <th>Song Title</th>
-                            <th>Artist</th>
-                            <th>Language</th>
-                            <th>Genre</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </div>
-        <button id="nextSemiFinalButton" class="btn btn-primary mt-3" style="display: none;">Proceed to Semi-Final 2</button>
-        <div class="semi-final-charts"></div>
-    `;
+
+                const timerDisplay = document.createElement('div');
+                timerDisplay.id = 'timerDisplay';
+                timerDisplay.className = 'mt-3 text-center';
+                simulationArea.appendChild(timerDisplay);
+
+                const row = document.createElement('div');
+                row.className = 'row';
+
+                const left = document.createElement('div');
+                left.className = 'col-md-6';
+                const h3Left = document.createElement('h3');
+                h3Left.textContent = `Semi-Final ${state.currentSemiFinal} Countries`;
+                left.appendChild(h3Left);
+                const semiTable = document.createElement('table');
+                semiTable.id = 'semiFinalTable';
+                semiTable.className = 'table table-striped';
+                semiTable.innerHTML = '<thead><tr><th>Country</th><th>Song Title</th><th>Artist</th><th>Language</th><th>Genre</th></tr></thead><tbody></tbody>';
+                left.appendChild(semiTable);
+                row.appendChild(left);
+
+                const right = document.createElement('div');
+                right.className = 'col-md-6';
+                const h3Right = document.createElement('h3');
+                h3Right.textContent = 'Qualified Countries';
+                right.appendChild(h3Right);
+                const qualTable = document.createElement('table');
+                qualTable.id = 'qualifiedTable';
+                qualTable.className = 'table table-striped';
+                qualTable.innerHTML = '<thead><tr><th>Country</th><th>Song Title</th><th>Artist</th><th>Language</th><th>Genre</th></tr></thead><tbody></tbody>';
+                right.appendChild(qualTable);
+                row.appendChild(right);
+
+                simulationArea.appendChild(row);
+
+                const nextBtn = document.createElement('button');
+                nextBtn.id = 'nextSemiFinalButton';
+                nextBtn.className = 'btn btn-primary mt-3';
+                nextBtn.style.display = 'none';
+                nextBtn.textContent = 'Proceed to Semi-Final 2';
+                simulationArea.appendChild(nextBtn);
+
+                const chartsDiv = document.createElement('div');
+                chartsDiv.className = 'semi-final-charts';
+                simulationArea.appendChild(chartsDiv);
 
                 document.querySelector('.settings-card').insertAdjacentElement('afterend', simulationArea);
             }
@@ -2521,16 +2704,18 @@
 
                 sortedCountries.forEach(([country, data]) => {
                     const row = table.insertRow();
-                    row.innerHTML = `
-            <td>
-                ${country}
-                <span class="flag-icon flag-icon-${getCountryCode(country)} ml-2"></span>
-            </td>
-            <td style="font-style: italic;">${data.songTitle || '-'}</td>
-            <td>${data.artistName || '-'}</td>
-            <td>${data.language || '-'}</td>
-            <td>${data.genre}</td>
-        `;
+                    const tdCountry = document.createElement('td');
+                    tdCountry.innerHTML = `${country} <span class="flag-icon flag-icon-${getCountryCode(country)} ml-2"></span>`;
+                    row.appendChild(tdCountry);
+                    ['songTitle', 'artistName', 'language'].forEach(prop => {
+                        const td = document.createElement('td');
+                        if (prop === 'songTitle') td.style.fontStyle = 'italic';
+                        td.textContent = data[prop] || '-';
+                        row.appendChild(td);
+                    });
+                    const tdGenre = document.createElement('td');
+                    tdGenre.textContent = data.genre;
+                    row.appendChild(tdGenre);
                 });
             }
             // Function to collect current scenario data from the UI
@@ -2547,9 +2732,9 @@
                     maxOdds: parseInt(document.getElementById('maxOdds').value),
                     maxOddsDifference: parseInt(document.getElementById('maxOddsDifference').value),
                     // Data related to custom contestants
-                    customContestants: [...window.customContestants], // Assuming 'customContestants' is a global array
-                    customcountryCodeMap: { ...window.customcountryCodeMap }, // Assuming 'customcountryCodeMap' is a global object
-                    customContestantsFlag: [...window.customContestantsFlag] // Assuming 'customContestantsFlag' is a global array
+                    customContestants: [...state.customContestants],
+                    customcountryCodeMap: { ...state.customcountryCodeMap },
+                    customContestantsFlag: [...state.customContestantsFlag]
                 };
 
                 // Collect data for each selected country
@@ -2591,7 +2776,7 @@
                 });
 
                 // Collect genre likeability settings
-                genres.forEach(genre => { // 'genres' is a global array in your script
+                state.genres.forEach(genre => {
                     const inputElement = document.querySelector(`.genre-likeability[data-genre="${genre}"]`);
                     if (inputElement) {
                         scenario.genreLikeability[genre] = parseInt(inputElement.value);
@@ -2601,7 +2786,7 @@
                 });
 
                 // Collect scenography likeability settings
-                scenographies.forEach(scenography => {
+                state.scenographies.forEach(scenography => {
                     const inputElement = document.querySelector(`.scenography-likeability[data-scenography="${scenography}"]`);
                     if (inputElement) {
                         scenario.scenographyLikeability[scenography] = parseInt(inputElement.value);
@@ -2623,20 +2808,18 @@
                 // 2. Apply custom contestants data if present in the scenario
                 // This assumes 'createCountryTable' and 'addCSS' functions are globally available from your original script
                 if (scenario.customContestants && scenario.customcountryCodeMap && scenario.customContestantsFlag && typeof createCountryTable === 'function') {
-                    window.customContestants = [...scenario.customContestants];
-                    window.customcountryCodeMap = { ...scenario.customcountryCodeMap };
-                    window.customContestantsFlag = [...scenario.customContestantsFlag];
+                    state.customContestants = [...scenario.customContestants];
+                    state.customcountryCodeMap = { ...scenario.customcountryCodeMap };
+                    state.customContestantsFlag = [...scenario.customContestantsFlag];
 
-                    createCountryTable('customContestants', window.customContestants);
+                    createCountryTable('customContestants', state.customContestants);
 
                     if (typeof addCSS === 'function') {
-                        window.customContestants.forEach(name => {
-                            const code = window.customcountryCodeMap[name];
-                            // Find the flag URL for this custom country.
-                            // This assumes customContestantsFlag stores URLs in the same order as customContestants names.
-                            const countryIndex = window.customContestants.indexOf(name);
-                            if (code && window.customContestantsFlag[countryIndex]) {
-                                addCSS(`.flag-icon-${code}{ background-image: url("${window.customContestantsFlag[countryIndex]}"); }`);
+                        state.customContestants.forEach(name => {
+                            const code = state.customcountryCodeMap[name];
+                            const countryIndex = state.customContestants.indexOf(name);
+                            if (code && state.customContestantsFlag[countryIndex]) {
+                                addCSS(`.flag-icon-${code}{ background-image: url("${state.customContestantsFlag[countryIndex]}"); }`);
                             }
                         });
                     }
@@ -2684,24 +2867,23 @@
                 });
 
                 // 4. Apply genre likeability
-                // 'genreLikeability' (the object) and 'genres' (the array) are global in your script
-                if (scenario.genreLikeability && typeof genreLikeability === 'object' && genreLikeability !== null) {
-                    genres.forEach(genre => {
+                if (scenario.genreLikeability && typeof state.genreLikeability === 'object' && state.genreLikeability !== null) {
+                    state.genres.forEach(genre => {
                         const inputElement = document.querySelector(`.genre-likeability[data-genre="${genre}"]`);
                         if (inputElement && scenario.genreLikeability[genre] !== undefined) {
                             inputElement.value = scenario.genreLikeability[genre];
-                            genreLikeability[genre] = scenario.genreLikeability[genre]; // Update the JS variable as well
+                            state.genreLikeability[genre] = scenario.genreLikeability[genre];
                         }
                     });
                 }
 
                 // Apply scenography likeability
-                if (scenario.scenographyLikeability && typeof scenographyLikeability === 'object' && scenographyLikeability !== null) {
-                    scenographies.forEach(scenography => {
+                if (scenario.scenographyLikeability && typeof state.scenographyLikeability === 'object' && state.scenographyLikeability !== null) {
+                    state.scenographies.forEach(scenography => {
                         const inputElement = document.querySelector(`.scenography-likeability[data-scenography="${scenography}"]`);
                         if (inputElement && scenario.scenographyLikeability[scenography] !== undefined) {
                             inputElement.value = scenario.scenographyLikeability[scenography];
-                            scenographyLikeability[scenography] = scenario.scenographyLikeability[scenography];
+                            state.scenographyLikeability[scenography] = scenario.scenographyLikeability[scenography];
                         }
                     });
                 }
@@ -2865,12 +3047,12 @@
 
                 resultsDiv.innerHTML = '<div class="text-center my-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p>Generating results...</p></div>';
 
-                setTimeout(() => {
+                requestAnimationFrame(() => {
                     if (selectedCountries.length > 26) {
                         const contestResults = runContest(selectedCountries, genreBonuses);
-                        semiFinal1Results = contestResults.semiFinal1;
-                        semiFinal2Results = contestResults.semiFinal2;
-                        finalResults = contestResults.finalResults;
+                        state.semiFinal1Results = contestResults.semiFinal1;
+                        state.semiFinal2Results = contestResults.semiFinal2;
+                        state.finalResults = contestResults.finalResults;
                         semiFinal1Button.disabled = false;
                         semiFinal2Button.disabled = false;
                         semiFinal1Button.classList.add('btn-pink');
@@ -2886,7 +3068,7 @@
                         document.getElementById('simulateSemiDrawButton').disabled = false;
                     } else {
                         const contestResults = generateVotingResults(selectedCountries, null, genreBonuses);
-                        finalResults = contestResults;
+                        state.finalResults = contestResults;
                         displayResults(contestResults.results, selectedCountries, contestResults.votingOrder);
                         semiFinal1Button.disabled = true;
                         semiFinal2Button.disabled = true;
@@ -2896,31 +3078,45 @@
                     finaleButton.disabled = false;
                     dynamicESCVotingButton.disabled = false;
                     dynamicVotingButton.disabled = false;
-                }, 1000);
+
+                    // Save winner to Firebase leaderboard
+                    const results = state.finalResults.results;
+                    const competing = Object.keys(results).filter(c => results[c].isCompeting);
+                    if (competing.length > 0) {
+                        const winner = competing.reduce((best, c) => {
+                            const t = results[c].juryTotal + results[c].teleTotal;
+                            const bestT = results[best].juryTotal + results[best].teleTotal;
+                            return t > bestT ? c : best;
+                        });
+                        saveResultToFirebase(winner, selectedCountries.length, state.selectedVotingSystem).then(() => {
+                            loadLeaderboard(); // refresh leaderboard after save
+                        });
+                    }
+                });
             });
 
             updateAQCheckboxStatus();
 
             semiFinal1Button.addEventListener('click', () => {
-                displaySemiFinals(semiFinal1Results, "Semi-Final 1");
+                displaySemiFinals(state.semiFinal1Results, "Semi-Final 1");
             });
 
             semiFinal2Button.addEventListener('click', () => {
-                displaySemiFinals(semiFinal2Results, "Semi-Final 2");
+                displaySemiFinals(state.semiFinal2Results, "Semi-Final 2");
             });
 
             finaleButton.addEventListener('click', () => {
-                if (!finalResults || !finalResults.results) {
+                if (!state.finalResults || !state.finalResults.results) {
                     alert('Please generate the contest results first.');
                     return;
                 }
-                displayFinalResults(finalResults);
+                displayFinalResults(state.finalResults);
             });
 
             simulateButton.addEventListener('click', () => {
                 simulateButton.disabled = true;
                 hideSettingsShowSimulation();
-                populateSemiFinalTable(currentSemiFinal === 1 ? semiFinal1Results.results : semiFinal2Results.results);
+                populateSemiFinalTable(state.currentSemiFinal === 1 ? state.semiFinal1Results.results : state.semiFinal2Results.results);
 
                 const semiFinalTable = document.getElementById('semiFinalTable').getElementsByTagName('tbody')[0];
                 const qualifiedTable = document.getElementById('qualifiedTable').getElementsByTagName('tbody')[0];
@@ -2933,11 +3129,11 @@
                     element: row,
                     country: row.cells[0].textContent.trim(),
                     genre: row.cells[4] ? row.cells[4].textContent.trim() : '',
-                    points: currentSemiFinal === 1
-                        ? semiFinal1Results.results[row.cells[0].textContent.trim()].juryTotal +
-                        semiFinal1Results.results[row.cells[0].textContent.trim()].teleTotal
-                        : semiFinal2Results.results[row.cells[0].textContent.trim()].juryTotal +
-                        semiFinal2Results.results[row.cells[0].textContent.trim()].teleTotal
+                    points: state.currentSemiFinal === 1
+                        ? state.semiFinal1Results.results[row.cells[0].textContent.trim()].juryTotal +
+                        state.semiFinal1Results.results[row.cells[0].textContent.trim()].teleTotal
+                        : state.semiFinal2Results.results[row.cells[0].textContent.trim()].juryTotal +
+                        state.semiFinal2Results.results[row.cells[0].textContent.trim()].teleTotal
                 }));
 
                 const topTen = allCountries
@@ -2953,28 +3149,21 @@
                     timerDisplay.textContent = `Next country in: ${secondsLeft} seconds`;
                 }
 
-                function revealCountry(index) {
+                async function revealCountry(index) {
                     if (index < topTen.length) {
-                        let secondsLeft = revealTime;
-                        const countdownInterval = setInterval(() => {
-                            if (secondsLeft > 0) {
-                                updateTimer(secondsLeft);
-                                secondsLeft--;
-                            } else {
-                                clearInterval(countdownInterval);
-                                const countryData = topTen[index];
-                                const newRow = qualifiedTable.insertRow();
-                                newRow.innerHTML = countryData.element.innerHTML;
-                                newRow.classList.add('table-success');
-
-                                semiFinalTable.deleteRow(Array.from(semiFinalTable.rows).indexOf(countryData.element));
-
-                                revealCountry(index + 1);
-                            }
-                        }, 1000);
+                        for (let secondsLeft = revealTime; secondsLeft >= 0; secondsLeft--) {
+                            timerDisplay.textContent = `Next country in: ${secondsLeft} seconds`;
+                            if (secondsLeft > 0) await delay(1000);
+                        }
+                        const countryData = topTen[index];
+                        const newRow = qualifiedTable.insertRow();
+                        newRow.innerHTML = countryData.element.innerHTML;
+                        newRow.classList.add('table-success');
+                        semiFinalTable.deleteRow(Array.from(semiFinalTable.rows).indexOf(countryData.element));
+                        revealCountry(index + 1);
                     } else {
                         timerDisplay.textContent = 'All countries revealed!';
-                        if (currentSemiFinal === 1) {
+                        if (state.currentSemiFinal === 1) {
                             document.getElementById('nextSemiFinalButton').style.display = 'block';
                         } else {
                             document.getElementById('finaleButton').disabled = false;
@@ -2990,9 +3179,9 @@
 
             document.addEventListener('click', function (e) {
                 if (e.target && e.target.id === 'nextSemiFinalButton') {
-                    currentSemiFinal = 2;
+                    state.currentSemiFinal = 2;
                     hideSettingsShowSimulation();
-                    populateSemiFinalTable(semiFinal2Results.results);
+                    populateSemiFinalTable(state.semiFinal2Results.results);
                     simulateButton.disabled = false;
                     e.target.style.display = 'none';
 
@@ -3104,8 +3293,8 @@
                 return 1.0;
             }
 
-            function calculateRealisticWeight(voter, receiver, oddsType, isJury) {
-                const receiverData = results[receiver.name];
+            function calculateRealisticWeight(voter, receiver, oddsType, isJury, results) {
+                const receiverData = results ? results[receiver.name] : null;
                 const baseOdds = receiverData ? receiverData[oddsType] : receiver[oddsType];
 
                 // Start with base weight calculation
@@ -3150,13 +3339,13 @@
                 return Math.max(1, Math.round(weight));
             }
 
-            function createWeightedCountries(availableCountries, oddsType, voter = null, isJury = false) {
+            function createWeightedCountries(availableCountries, oddsType, voter = null, isJury = false, results = null) {
                 const weights = availableCountries.map(country => {
-                    const odds = results[country.name] ? results[country.name][oddsType] : country[oddsType];
+                    const odds = results ? (results[country.name] ? results[country.name][oddsType] : country[oddsType]) : country[oddsType];
 
                     // Use realistic weight calculation if voter is provided
                     const weight = voter
-                        ? calculateRealisticWeight(voter, country, oddsType, isJury)
+                        ? calculateRealisticWeight(voter, country, oddsType, isJury, results)
                         : calculateWeight(odds);
 
                     return { country: country.name, weight: weight };
@@ -3266,7 +3455,7 @@
                     const availableCountries = countries.filter(c => c.name !== voter);
 
                     // Televoting with realistic weights (geographical, cultural, emotional)
-                    const teleWeightedCountries = createWeightedCountries(availableCountries, 'teleOdds', voter, false);
+                    const teleWeightedCountries = createWeightedCountries(availableCountries, 'teleOdds', voter, false, results);
                     const teleVotedCountries = selectVotingCountries(teleWeightedCountries);
 
                     if (results[voter]) {
@@ -3277,9 +3466,9 @@
                         });
 
                         // Only calculate jury voting if it's the final or if using the current system in semi-finals
-                        if (selectedVotingSystem === 'current' || votingCountries) {
+                        if (state.selectedVotingSystem === 'current' || votingCountries) {
                             // Jury voting with realistic weights (more professional, less biased but still some bias)
-                            const juryWeightedCountries = createWeightedCountries(availableCountries, 'juryOdds', voter, true);
+                            const juryWeightedCountries = createWeightedCountries(availableCountries, 'juryOdds', voter, true, results);
                             const juryVotedCountries = selectVotingCountries(juryWeightedCountries);
                             juryVotedCountries.forEach((country, index) => {
                                 results[voter].juryVotesGiven[country] = points[index];
@@ -3293,7 +3482,7 @@
                     .filter(country => results[country].isCompeting)
                     .sort((a, b) => results[b].teleTotal - results[a].teleTotal);
 
-                if (selectedVotingSystem === 'current' || votingCountries) {
+                if (state.selectedVotingSystem === 'current' || votingCountries) {
                     sortedTele.forEach((country, index) => {
                         results[country].telePlacement = results[country].teleTotal > 0 ? index + 1 : `<p style="color:red;">${sortedTele.length} (0p)</p>`;
                     });
@@ -3400,80 +3589,65 @@
                 });
             }
 
-            // NOTE: The original code attached listeners here synchronously, but
-            // country-checkbox elements only exist after `loadData()` finishes
-            // populating tables from data.json. The listeners are now wired up
-            // inside `loadData()` (and after every table rebuild) so this line is
-            // intentionally a no-op kept for backwards compatibility.
 
 
-
-            function displayResults(results, countries, votingOrder) {
-                let html = `
-        ${createVotingChart({ results, votingOrder }, "Jury Voting - Final", false)}
-        ${createVotingChart({ results, votingOrder }, "Televoting - Final", true)}
-        <h2 class="results-headline">Final Results</h2>
-        <table class="table table-striped eurovision-table">
-            <thead>
-                <tr>
-                    <th>Rank</th>
-                    <th>Country</th>
-                    <th>Song Title</th>
-                    <th>Artist</th>
-                    <th>Language</th>
-                    <th>Genre</th>
-                    <th>Scenography</th>
-                    <th>Jury Points</th>
-                    <th>Tele Points</th>
-                    <th>Total Points</th>
-                    <th>Jury Placement</th>
-                    <th>Tele Placement</th>
-                </tr>
-            </thead>
-            <tbody>
-    `;
-
-                const sortedCountries = [...countries].sort((a, b) => {
-                    const totalA = results[a.name].juryTotal + results[a.name].teleTotal;
-                    const totalB = results[b.name].juryTotal + results[b.name].teleTotal;
+            function displayResults(results, countries, votingOrder, includeSummary = false) {
+                const countryNames = countries.map(c => typeof c === 'string' ? c : c.name);
+                const sortedCountryNames = [...countryNames].sort((a, b) => {
+                    const totalA = results[a].juryTotal + results[a].teleTotal;
+                    const totalB = results[b].juryTotal + results[b].teleTotal;
                     if (totalA !== totalB) return totalB - totalA;
-                    if (results[a.name].teleTotal !== results[b.name].teleTotal) return results[b.name].teleTotal - results[a.name].teleTotal;
-                    return tiebreaker(results[a.name], results[b.name]);
+                    if (results[a].teleTotal !== results[b].teleTotal) return results[b].teleTotal - results[a].teleTotal;
+                    return tiebreaker(results[a], results[b]);
                 });
 
-                sortedCountries.forEach((country, index) => {
-                    html += `<tr>
-                <td>${index + 1}</td>
-                <td style="text-align: right;">
-                    ${country.name}
-                    <span class="flag-icon flag-icon-${getCountryCode(country.name)} ml-2"></span>
-                </td>
-                <td style="font-style: italic;">${results[country.name].songTitle || '-'}</td>
-                <td>${results[country.name].artistName || '-'}</td>
-                <td>${results[country.name].language || '-'}</td>
-                <td>${results[country.name].genre}</td>
-                <td>${results[country.name].scenography || 'Minimal'}</td>
-                <td class="points">${results[country.name].juryTotal}</td>
-                <td class="points">${results[country.name].teleTotal}</td>
-                <td class="points">${results[country.name].juryTotal + results[country.name].teleTotal}</td>
-                <td class="placement">${results[country.name].juryPlacement}</td>
-                <td class="placement">${results[country.name].telePlacement}</td>
-            </tr>
-        `;
+                resultsDiv.innerHTML = '';
+                resultsDiv.insertAdjacentHTML('beforeend',
+                    createVotingChart({ results, votingOrder }, "Jury Voting - Final", false));
+                resultsDiv.insertAdjacentHTML('beforeend',
+                    createVotingChart({ results, votingOrder }, "Televoting - Final", true));
+
+                const heading = document.createElement('h2');
+                heading.className = 'results-headline';
+                heading.textContent = 'Final Results';
+                resultsDiv.appendChild(heading);
+
+                const table = document.createElement('table');
+                table.className = 'table table-striped eurovision-table';
+                table.innerHTML = `<thead><tr><th>Rank</th><th>Country</th><th>Song Title</th><th>Artist</th><th>Language</th><th>Genre</th><th>Scenography</th><th>Jury Points</th><th>Tele Points</th><th>Total Points</th><th>Jury Placement</th><th>Tele Placement</th></tr></thead><tbody></tbody>`;
+                const tbody = table.tBodies[0];
+                const rowTpl = document.getElementById('tpl-result-row');
+
+                sortedCountryNames.forEach((country, index) => {
+                    const row = rowTpl.content.firstElementChild.cloneNode(true);
+                    if (results[country].isAQ) row.classList.add('auto-qualifier');
+                    row.querySelector('.rank-col').textContent = index + 1;
+                    row.querySelector('.country-label').textContent = country;
+                    row.querySelector('.flag-icon').className = `flag-icon flag-icon-${getCountryCode(country)} ml-2`;
+                    row.querySelector('.song-col').textContent = results[country].songTitle || '-';
+                    row.querySelector('.artist-col').textContent = results[country].artistName || '-';
+                    row.querySelector('.lang-col').textContent = results[country].language || '-';
+                    row.querySelector('.genre-col').textContent = results[country].genre;
+                    row.querySelector('.sceno-col').textContent = results[country].scenography || 'Minimal';
+                    row.querySelector('.jury-pts-col').textContent = results[country].juryTotal;
+                    row.querySelector('.tele-pts-col').textContent = results[country].teleTotal;
+                    row.querySelector('.total-pts-col').textContent = results[country].juryTotal + results[country].teleTotal;
+                    row.querySelector('.jury-place-col').innerHTML = results[country].juryPlacement;
+                    row.querySelector('.tele-place-col').innerHTML = results[country].telePlacement;
+                    tbody.appendChild(row);
                 });
 
-                html += `
-            </tbody>
-        </table>
-    `;
+                resultsDiv.appendChild(table);
 
-                resultsDiv.innerHTML = html;
+                if (includeSummary) {
+                    resultsDiv.insertAdjacentHTML('beforeend', createSummaryTable(sortedCountryNames, results));
+                }
             }
 
             function getQualifiers(results, count) {
                 const sortedCountries = Object.entries(results)
                     .sort((a, b) => {
-                        if (selectedVotingSystem === 'current') {
+                        if (state.selectedVotingSystem === 'current') {
                             const totalA = a[1].juryTotal + a[1].teleTotal;
                             const totalB = b[1].juryTotal + b[1].teleTotal;
                             if (totalA !== totalB) return totalB - totalA;
@@ -3499,7 +3673,7 @@
                 chartContainer.innerHTML = `
         <h3 class="results-headline">${title} Results</h3>
         ${createSemiFinalTable(semiFinal)}
-        ${selectedVotingSystem === 'current' ? createVotingChart(semiFinal, `Jury Voting - ${title}`, false) : ''}
+        ${state.selectedVotingSystem === 'current' ? createVotingChart(semiFinal, `Jury Voting - ${title}`, false) : ''}
         ${createVotingChart(semiFinal, `Televoting - ${title}`, true)}
     `;
             }
@@ -3507,7 +3681,7 @@
             function createSemiFinalTable(semiFinal) {
                 const sortedCountries = Object.keys(semiFinal.results)
                     .sort((a, b) => {
-                        if (selectedVotingSystem === 'current') {
+                        if (state.selectedVotingSystem === 'current') {
                             const totalA = semiFinal.results[a].juryTotal + semiFinal.results[a].teleTotal;
                             const totalB = semiFinal.results[b].juryTotal + semiFinal.results[b].teleTotal;
                             if (totalA !== totalB) return totalB - totalA;
@@ -3515,62 +3689,44 @@
                         return semiFinal.results[b].teleTotal - semiFinal.results[a].teleTotal;
                     });
 
-                let html = `
-        <table class="table table-striped eurovision-table">
-            <thead>
-                <tr>
-                    <th>Rank</th>
-                    <th>Country</th>
-                    <th>Song Title</th>
-                    <th>Artist</th>
-                    <th>Language</th>
-                    <th>Genre</th>
-                    <th>Scenography</th>
-                    ${selectedVotingSystem === 'current' ? '<th>Jury Points</th>' : ''}
-                    <th>Tele Points</th>
-                    ${selectedVotingSystem === 'current' ? '<th>Total Points</th>' : ''}
-                    ${selectedVotingSystem === 'current' ? '<th>Jury Placement</th>' : ''}
-                    ${selectedVotingSystem === 'current' ? '<th>Tele Placement</th>' : ''}
-                </tr>
-            </thead>
-            <tbody>
-    `;
+                const isCurrent = state.selectedVotingSystem === 'current';
+                const table = document.createElement('table');
+                table.className = 'table table-striped eurovision-table';
+                const juryCols = isCurrent ? '<th>Jury Points</th><th>Total Points</th><th>Jury Placement</th><th>Tele Placement</th>' : '';
+                table.innerHTML = `<thead><tr><th>Rank</th><th>Country</th><th>Song Title</th><th>Artist</th><th>Language</th><th>Genre</th><th>Scenography</th>${juryCols}<th>Tele Points</th></tr></thead><tbody></tbody>`;
+                const tbody = table.tBodies[0];
+                const rowTpl = document.getElementById('tpl-result-row');
 
                 sortedCountries.forEach((country, index) => {
                     const result = semiFinal.results[country];
-                    const isQualified = index < 10;
-                    html += `
-            <tr class="${isQualified ? '' : 'non-qualifier'}">
-                <td>${index + 1}</td>
-                <td style="text-align: right;">
-                    ${country}
-                    <span class="flag-icon flag-icon-${getCountryCode(country)} ml-2"></span>
-                </td>
-                <td style="font-style: italic;">${result.songTitle || '-'}</td>
-                <td>${result.artistName || '-'}</td>
-                <td>${result.language || '-'}</td>
-                <td>${result.genre}</td>
-                <td>${result.scenography || 'Minimal'}</td>
-                ${selectedVotingSystem === 'current' ? `<td class="points">${result.juryTotal}</td>` : ''}
-                <td class="points">${result.teleTotal}</td>
-                ${selectedVotingSystem === 'current' ? `<td class="points">${result.juryTotal + result.teleTotal}</td>` : ''}
-                ${selectedVotingSystem === 'current' ? `<td class="semi-placement">${result.juryPlacement}</td>` : ''}
-                ${selectedVotingSystem === 'current' ? `<td class="semi-placement">${result.telePlacement}</td>` : ''}
-            </tr>
-        `;
+                    const row = rowTpl.content.firstElementChild.cloneNode(true);
+                    if (index >= 10) row.classList.add('non-qualifier');
+                    row.querySelector('.rank-col').textContent = index + 1;
+                    row.querySelector('.country-label').textContent = country;
+                    row.querySelector('.flag-icon').className = `flag-icon flag-icon-${getCountryCode(country)} ml-2`;
+                    row.querySelector('.song-col').textContent = result.songTitle || '-';
+                    row.querySelector('.artist-col').textContent = result.artistName || '-';
+                    row.querySelector('.lang-col').textContent = result.language || '-';
+                    row.querySelector('.genre-col').textContent = result.genre;
+                    row.querySelector('.sceno-col').textContent = result.scenography || 'Minimal';
+                    if (isCurrent) row.querySelector('.jury-pts-col').textContent = result.juryTotal;
+                    row.querySelector('.tele-pts-col').textContent = result.teleTotal;
+                    if (isCurrent) {
+                        row.querySelector('.total-pts-col').textContent = result.juryTotal + result.teleTotal;
+                        row.querySelector('.jury-place-col').innerHTML = result.juryPlacement;
+                        row.querySelector('.tele-place-col').innerHTML = result.telePlacement;
+                    }
+                    tbody.appendChild(row);
                 });
 
-                html += `
-            </tbody>
-        </table>
-    `;
-
-                return html;
+                const wrapper = document.createElement('div');
+                wrapper.appendChild(table);
+                return wrapper.innerHTML;
             }
 
             function createVotingChart(results, title, isTele = false) {
-                if (!isTele && selectedVotingSystem === 'noJurySemi' && !title.includes('Final')) {
-                    return ''; // Don't create jury voting chart for semi-finals in no-jury system
+                if (!isTele && state.selectedVotingSystem === 'noJurySemi' && !title.includes('Final')) {
+                    return '';
                 }
 
                 const { results: voteResults, votingOrder } = results;
@@ -3582,127 +3738,116 @@
                         return totalB - totalA;
                     });
 
-                let html = `
-        <h3 class="results-headline">${title}</h3>
-        <div class="table-responsive">
-            <table class="table table-striped eurovision-table">
-                <thead>
-                    <tr>
-                        <th>Receiving Country</th>
-                        <th>Song Title</th>
-                        <th>Artist</th>
-                        <th>Language</th>
-                        <th>Genre</th>
-                        ${votingOrder.map(country => `
-                            <th class="rotate-header">
-                                <div class="country-name">${country}</div>
-                                <div class="flag-container">
-                                    <span class="flag-icon flag-icon-${getCountryCode(country)}"></span>
-                                </div>
-                            </th>
-                        `).join('')}
-                        <th>Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-    `;
+                const chartTpl = document.getElementById('tpl-voting-chart');
+                const voterTpl = document.getElementById('tpl-voter-header');
+                const rowTpl = document.getElementById('tpl-chart-row');
+                const clone = chartTpl.content.firstElementChild.cloneNode(true);
+                const table = clone.querySelector('table');
+                const theadRow = table.tHead.rows[0];
+                const voterHeadersCell = theadRow.querySelector('.voter-headers');
 
-                sortedCountries.forEach((receiver, index) => {
-                    html += `
-            <tr>
-                <td class="receiving-country">
-                    ${receiver}
-                    <span class="flag-icon flag-icon-${getCountryCode(receiver)}"></span>
-                </td>
-                <td style="font-style: italic;">${voteResults[receiver].songTitle || '-'}</td>
-                <td>${voteResults[receiver].artistName || '-'}</td>
-                <td>${voteResults[receiver].language || '-'}</td>
-                <td>${voteResults[receiver].genre}</td>
-                ${votingOrder.map(voter => {
+                votingOrder.forEach(country => {
+                    const vh = voterTpl.content.firstElementChild.cloneNode(true);
+                    vh.querySelector('.country-name').textContent = country;
+                    vh.querySelector('.flag-icon').className = `flag-icon flag-icon-${getCountryCode(country)}`;
+                    voterHeadersCell.parentNode.insertBefore(vh, voterHeadersCell);
+                });
+                voterHeadersCell.remove();
+
+                const tbody = table.tBodies[0];
+                sortedCountries.forEach(receiver => {
+                    const row = rowTpl.content.firstElementChild.cloneNode(true);
+                    row.querySelector('.recv-name').textContent = receiver;
+                    row.querySelector('.flag-icon').className = `flag-icon flag-icon-${getCountryCode(receiver)}`;
+                    row.querySelector('.song-col').textContent = voteResults[receiver].songTitle || '-';
+                    row.querySelector('.artist-col').textContent = voteResults[receiver].artistName || '-';
+                    row.querySelector('.lang-col').textContent = voteResults[receiver].language || '-';
+                    row.querySelector('.genre-col').textContent = voteResults[receiver].genre;
+
+                    const voteCellsCell = row.querySelector('.vote-cells');
+                    votingOrder.forEach(voter => {
+                        const td = document.createElement('td');
                         if (!voteResults[voter]) {
-                            return '<td></td>';
+                            voteCellsCell.parentNode.insertBefore(td, voteCellsCell);
+                            return;
                         }
-                        const points = voter !== receiver ? (isTele ? voteResults[voter].teleVotesGiven[receiver] : voteResults[voter].juryVotesGiven[receiver]) || '' : '';
-                        let cellClass = voter === receiver ? 'self-vote' : `points-${points}`;
-                        return `<td class="${cellClass}">${points}</td>`;
-                    }).join('')}
-                <td class="total-column">${isTele ? voteResults[receiver].teleTotal : voteResults[receiver].juryTotal}</td>
-            </tr>
-        `;
+                        const points = voter !== receiver
+                            ? (isTele ? voteResults[voter].teleVotesGiven[receiver] : voteResults[voter].juryVotesGiven[receiver]) || ''
+                            : '';
+                        const cellClass = voter === receiver ? 'self-vote' : `points-${points}`;
+                        td.className = cellClass;
+                        td.textContent = points;
+                        voteCellsCell.parentNode.insertBefore(td, voteCellsCell);
+                    });
+                    voteCellsCell.remove();
+
+                    row.querySelector('.total-column').textContent = isTele ? voteResults[receiver].teleTotal : voteResults[receiver].juryTotal;
+                    tbody.appendChild(row);
                 });
 
-                html += `
-                </tbody>
-            </table>
-        </div>
-    `;
-
-                return html;
+                const wrapper = document.createElement('div');
+                wrapper.innerHTML = `<h3 class="results-headline">${title}</h3>`;
+                wrapper.appendChild(clone);
+                return wrapper.innerHTML;
             }
 
             function simulateSemiFinalesDrawn() {
-                // Hide the "Load Participants" button when starting the draw so users
-                // cannot modify the participants list mid‑simulation.
                 const loadBtn = document.getElementById('loadParticipantsButton');
-                if (loadBtn) {
-                    loadBtn.style.display = 'none';
-                }
-                // Also hide the year selector and its label once the game starts
+                if (loadBtn) loadBtn.style.display = 'none';
                 const yearInput = document.getElementById('participantsYear');
                 const yearLabel = document.querySelector("label[for='participantsYear']");
-                if (yearInput) {
-                    yearInput.style.display = 'none';
-                }
-                if (yearLabel) {
-                    yearLabel.style.display = 'none';
-                }
-                if (!semiFinal1Results || !semiFinal2Results) {
+                if (yearInput) yearInput.style.display = 'none';
+                if (yearLabel) yearLabel.style.display = 'none';
+                if (!state.semiFinal1Results || !state.semiFinal2Results) {
                     alert("Please generate contest results first.");
                     return;
                 }
 
-                const allCountries = [...Object.keys(semiFinal1Results.results), ...Object.keys(semiFinal2Results.results)].sort();
+                const allCountries = [...Object.keys(state.semiFinal1Results.results), ...Object.keys(state.semiFinal2Results.results)].sort();
 
                 const drawSimulationDiv = document.createElement('div');
                 drawSimulationDiv.className = 'col-md-10 draw-simulation';
-                drawSimulationDiv.innerHTML = `
-        <div class="card settings-card">
-            <div class="card-body">
-                <h2>Semi-Final Draw Simulation</h2>
-                <button id="revealDrawButton" class="btn btn-primary mt-3 mb-3">Reveal Draw Results</button>
-                <div class="row">
-                    <div class="col-md-4">
-                        <h3>1st Semi-Final</h3>
-                        <table class="table table-striped">
-                            <tbody id="semi1DrawnTable"></tbody>
-                        </table>
-                    </div>
-                    <div class="col-md-4">
-                        <h3>Countries</h3>
-                        <table class="table table-striped">
-                            <tbody id="allCountriesTable">
-                                ${allCountries.map(country => `
-                                    <tr>
-                                        <td>
-                                            ${country}
-                                            <span class="flag-icon flag-icon-${getCountryCode(country)} ml-2"></span>
-                                            <span class="genre-info">(${semiFinal1Results.results[country]?.genre || semiFinal2Results.results[country]?.genre})</span>
-                                        </td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="col-md-4">
-                        <h3>2nd Semi-Final</h3>
-                        <table class="table table-striped">
-                            <tbody id="semi2DrawnTable"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
+
+                const card = document.createElement('div');
+                card.className = 'card settings-card';
+                const cardBody = document.createElement('div');
+                cardBody.className = 'card-body';
+                cardBody.innerHTML = '<h2>Semi-Final Draw Simulation</h2>';
+
+                const revealBtn = document.createElement('button');
+                revealBtn.id = 'revealDrawButton';
+                revealBtn.className = 'btn btn-primary mt-3 mb-3';
+                revealBtn.textContent = 'Reveal Draw Results';
+                cardBody.appendChild(revealBtn);
+
+                const row = document.createElement('div');
+                row.className = 'row';
+
+                const semi1Div = document.createElement('div');
+                semi1Div.className = 'col-md-4';
+                semi1Div.innerHTML = '<h3>1st Semi-Final</h3><table class="table table-striped"><tbody id="semi1DrawnTable"></tbody></table>';
+                row.appendChild(semi1Div);
+
+                const countriesDiv = document.createElement('div');
+                countriesDiv.className = 'col-md-4';
+                countriesDiv.innerHTML = '<h3>Countries</h3><table class="table table-striped"><tbody id="allCountriesTable"></tbody></table>';
+                const allTbody = countriesDiv.querySelector('tbody');
+                allCountries.forEach(country => {
+                    const tr = document.createElement('tr');
+                    const genre = state.semiFinal1Results.results[country]?.genre || state.semiFinal2Results.results[country]?.genre || '';
+                    tr.innerHTML = `<td>${country} <span class="flag-icon flag-icon-${getCountryCode(country)} ml-2"></span> <span class="genre-info">(${genre})</span></td>`;
+                    allTbody.appendChild(tr);
+                });
+                row.appendChild(countriesDiv);
+
+                const semi2Div = document.createElement('div');
+                semi2Div.className = 'col-md-4';
+                semi2Div.innerHTML = '<h3>2nd Semi-Final</h3><table class="table table-striped"><tbody id="semi2DrawnTable"></tbody></table>';
+                row.appendChild(semi2Div);
+
+                cardBody.appendChild(row);
+                card.appendChild(cardBody);
+                drawSimulationDiv.appendChild(card);
 
                 const mainRow = document.querySelector('.eurovision-simulator > .row');
 
@@ -3719,12 +3864,12 @@
                     const semi2Table = document.getElementById('semi2DrawnTable');
                     const allCountriesTable = document.getElementById('allCountriesTable');
 
-                    const semi1Countries = Object.keys(semiFinal1Results.results);
-                    const semi2Countries = Object.keys(semiFinal2Results.results);
+                    const semi1Countries = Object.keys(state.semiFinal1Results.results);
+                    const semi2Countries = Object.keys(state.semiFinal2Results.results);
 
                     let index = 0;
 
-                    function revealNextCountry() {
+                    async function revealNextCountry() {
                         if (index < allCountries.length) {
                             const country = allCountries[index];
                             const row = allCountriesTable.rows[index];
@@ -3741,7 +3886,8 @@
                             }
 
                             index++;
-                            setTimeout(revealNextCountry, 2000);
+                            await delay(2000);
+                            revealNextCountry();
                         } else {
                             document.getElementById('revealDrawButton').style.display = 'none';
                         }
@@ -3755,72 +3901,8 @@
 
             function displayFinalResults(finalResults) {
                 const { results, votingOrder } = finalResults;
-                const sortedCountries = Object.keys(results)
-                    .filter(country => results[country].isCompeting)
-                    .sort((a, b) => {
-                        const totalA = results[a].juryTotal + results[a].teleTotal;
-                        const totalB = results[b].juryTotal + results[b].teleTotal;
-                        if (totalA !== totalB) return totalB - totalA;
-                        if (results[a].teleTotal !== results[b].teleTotal) return results[b].teleTotal - results[a].teleTotal;
-                        return tiebreaker(results[a], results[b]);
-                    });
-
-                let html = `
-        ${createVotingChart(finalResults, "Jury Voting - Final", false)}
-        ${createVotingChart(finalResults, "Televoting - Final", true)}
-        <h2 class="results-headline">Final Results</h2>
-        <table class="table table-striped eurovision-table">
-            <thead>
-                <tr>
-                    <th>Rank</th>
-                    <th>Country</th>
-                    <th>Song Title</th>
-                    <th>Artist</th>
-                    <th>Language</th>
-                    <th>Genre</th>
-                    <th>Scenography</th>
-                    <th>Jury Points</th>
-                    <th>Tele Points</th>
-                    <th>Total Points</th>
-                    <th>Jury Placement</th>
-                    <th>Tele Placement</th>
-                </tr>
-            </thead>
-            <tbody>
-    `;
-
-                sortedCountries.forEach((country, index) => {
-                    html += `<tr class="${results[country].isAQ ? 'auto-qualifier' : ''}">
-                <td>${index + 1}</td>
-                <td style="text-align: right;">
-                    ${country}
-                    <span class="flag-icon flag-icon-${getCountryCode(country)} ml-2"></span>
-                </td>
-                <td style="font-style: italic;">${results[country].songTitle || '-'}</td>
-                <td>${results[country].artistName || '-'}</td>
-                <td>${results[country].language || '-'}</td>
-                <td>${results[country].genre}</td>
-                <td>${results[country].scenography || 'Minimal'}</td>
-                <td class="points">${results[country].juryTotal}</td>
-                <td class="points">${results[country].teleTotal}</td>
-                <td class="points">${results[country].juryTotal + results[country].teleTotal}</td>
-
-                <td class="placement">${results[country].juryPlacement}</td>
-                <td class="placement">${results[country].telePlacement}</td>
-            </tr>
-        `;
-                });
-
-
-                html += `
-        </tbody>
-    </table>
-`;
-
-                html += createSummaryTable(sortedCountries, results);
-
-                resultsDiv.innerHTML = html;
-
+                const competingCountries = Object.keys(results).filter(country => results[country].isCompeting);
+                displayResults(results, competingCountries, votingOrder, true);
             }
 
             function tiebreaker(a, b, previousOrder) {
@@ -3888,9 +3970,6 @@
                 return 0;
             }
 
-            // NOTE: A duplicate document-level click listener for showChartsButton was
-            // removed here. The button now has its own dedicated listener attached when it
-            // is created in the generateButton handler.
 
             document.querySelectorAll('.aq-checkbox').forEach(checkbox => {
                 checkbox.disabled = !checkbox.previousElementSibling.previousElementSibling.checked;
@@ -3899,111 +3978,93 @@
             document.getElementById('randomizeGenresButton').addEventListener('click', randomizeGenres);
             document.getElementById('randomizeScenographiesButton').addEventListener('click', randomizeScenographies);
 
-            const genreLikeabilityContainer = document.getElementById('genreLikeability');
-            genres.forEach(genre => {
-                const div = document.createElement('div');
-                div.innerHTML = `
-        <label>${genre}:</label>
-        <input type="number" class="genre-likeability" data-genre="${genre}" min="1" max="5" value="3">
-    `;
-                genreLikeabilityContainer.appendChild(div);
-            });
-
-            document.querySelectorAll('.genre-likeability').forEach(input => {
-                input.addEventListener('change', (e) => {
-                    const genre = e.target.dataset.genre;
-                    const value = parseInt(e.target.value);
-                    if (value >= 1 && value <= 5) {
-                        genreLikeability[genre] = value;
-                    } else {
-                        e.target.value = genreLikeability[genre];
-                    }
+            function buildLikeabilityUI() {
+                const genreContainer = document.getElementById('genreLikeability');
+                genreContainer.innerHTML = '';
+                state.genres.forEach(genre => {
+                    const div = document.createElement('div');
+                    div.innerHTML = `<label>${genre}:</label> <input type="number" class="genre-likeability" data-genre="${genre}" min="1" max="5" value="${state.genreLikeability[genre] || 3}">`;
+                    genreContainer.appendChild(div);
                 });
-            });
-
-            const scenographyLikeabilityContainer = document.getElementById('scenographyLikeability');
-            scenographies.forEach(scenography => {
-                const div = document.createElement('div');
-                div.innerHTML = `
-        <label>${scenography}:</label>
-        <input type="number" class="scenography-likeability" data-scenography="${scenography}" min="1" max="5" value="3">
-    `;
-                scenographyLikeabilityContainer.appendChild(div);
-            });
-
-            document.querySelectorAll('.scenography-likeability').forEach(input => {
-                input.addEventListener('change', (e) => {
-                    const scenography = e.target.dataset.scenography;
-                    const value = parseInt(e.target.value);
-                    if (value >= 1 && value <= 5) {
-                        scenographyLikeability[scenography] = value;
-                    } else {
-                        e.target.value = scenographyLikeability[scenography];
-                    }
+                genreContainer.querySelectorAll('.genre-likeability').forEach(input => {
+                    input.addEventListener('change', (e) => {
+                        const genre = e.target.dataset.genre;
+                        const value = parseInt(e.target.value);
+                        if (value >= 1 && value <= 5) {
+                            state.genreLikeability[genre] = value;
+                        } else {
+                            e.target.value = state.genreLikeability[genre];
+                        }
+                    });
                 });
-            });
+
+                const scenoContainer = document.getElementById('scenographyLikeability');
+                scenoContainer.innerHTML = '';
+                state.scenographies.forEach(scenography => {
+                    const div = document.createElement('div');
+                    div.innerHTML = `<label>${scenography}:</label> <input type="number" class="scenography-likeability" data-scenography="${scenography}" min="1" max="5" value="${state.scenographyLikeability[scenography] || 3}">`;
+                    scenoContainer.appendChild(div);
+                });
+                scenoContainer.querySelectorAll('.scenography-likeability').forEach(input => {
+                    input.addEventListener('change', (e) => {
+                        const scenography = e.target.dataset.scenography;
+                        const value = parseInt(e.target.value);
+                        if (value >= 1 && value <= 5) {
+                            state.scenographyLikeability[scenography] = value;
+                        } else {
+                            e.target.value = state.scenographyLikeability[scenography];
+                        }
+                    });
+                });
+            }
 
             document.getElementById('randomizeScenographyLikeabilityButton').addEventListener('click', randomizeScenographyLikeability);
 
             dynamicVotingButton.addEventListener('click', () => {
-                const { results, votingOrder } = finalResults;
+                const { results, votingOrder } = state.finalResults;
                 const competingCountries = Object.keys(results).filter(country => results[country].isCompeting);
 
                 dynamicVotingArea.innerHTML = '';
 
+                const dynTpl = document.getElementById('tpl-dyn-voting-table');
+                const rowTpl = document.getElementById('tpl-dyn-voting-row');
+                const voterTpl = document.getElementById('tpl-voter-header');
+                const clone = dynTpl.content.firstElementChild.cloneNode(true);
+                const table = clone.querySelector('table');
+                const theadRow = table.tHead.rows[0];
+                const voterHeadersCell = theadRow.querySelector('.voter-headers-dyn');
 
-                let html = `
-        <h2>Dynamic Voting Simulation</h2>
-        <div class="table-responsive">
-            <table class="table table-striped eurovision-table">
-                <thead>
-                    <tr>
-                        <th>Rank</th>
-                        <th>Receiving Country</th>
-                        <th>Song Title</th>
-                        <th>Artist</th>
-                        <th>Language</th>
-                        <th>Genre</th>
-                        <th>Jury Points</th>
-                        ${votingOrder.map(country => `
-                            <th class="rotate-header">
-                                <div class="country-name">${country}</div>
-                                <div class="flag-container">
-                                    <span class="flag-icon flag-icon-${getCountryCode(country)}"></span>
-                                </div>
-                            </th>
-                        `).join('')}
-                        <th>Televoting</th>
-                        <th>Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${competingCountries.map(country => `
-                        <tr data-country="${country}">
-                            <td class="rank"></td>
-                            <td class="receiving-country">
-                                ${country}
-                                <span class="flag-icon flag-icon-${getCountryCode(country)}"></span>
-                            </td>
-                            <td style="font-style: italic;">${results[country].songTitle || '-'}</td>
-                            <td>${results[country].artistName || '-'}</td>
-                            <td>${results[country].language || '-'}</td>
-                            <td class="genre">${results[country].genre}</td>
-                            <td class="jury-points">0</td>
-                            ${votingOrder.map(voter => `<td class="points-column" data-voter="${voter}"></td>`).join('')}
-                            <td class="tele-points">0</td>
-                            <td class="total-column">0</td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-        </div>
-        <button id="nextJuryButton" class="btn btn-primary mt-3 reveal-button">Reveal Next Jury</button>
-        <button id="revealTelevotingButton" class="btn btn-success mt-3 reveal-button" style="display: none;">Reveal Televoting</button>
-        <div id="debugInfo" class="mt-3"></div>
-    `;
+                votingOrder.forEach(country => {
+                    const vh = voterTpl.content.firstElementChild.cloneNode(true);
+                    vh.querySelector('.country-name').textContent = country;
+                    vh.querySelector('.flag-icon').className = `flag-icon flag-icon-${getCountryCode(country)}`;
+                    voterHeadersCell.parentNode.insertBefore(vh, voterHeadersCell);
+                });
+                voterHeadersCell.remove();
 
-                dynamicVotingArea.innerHTML = html;
+                const tbody = table.tBodies[0];
+                competingCountries.forEach(country => {
+                    const row = rowTpl.content.firstElementChild.cloneNode(true);
+                    row.dataset.country = country;
+                    row.querySelector('.cname').textContent = country;
+                    row.querySelector('.flag-icon').className = `flag-icon flag-icon-${getCountryCode(country)}`;
+                    row.querySelector('.song-col').textContent = results[country].songTitle || '-';
+                    row.querySelector('.artist-col').textContent = results[country].artistName || '-';
+                    row.querySelector('.lang-col').textContent = results[country].language || '-';
+                    row.querySelector('.genre').textContent = results[country].genre;
+
+                    const voteCellsCell = row.querySelector('.vote-cells-dyn');
+                    votingOrder.forEach(voter => {
+                        const td = document.createElement('td');
+                        td.className = 'points-column';
+                        td.dataset.voter = voter;
+                        voteCellsCell.parentNode.insertBefore(td, voteCellsCell);
+                    });
+                    voteCellsCell.remove();
+                    tbody.appendChild(row);
+                });
+
+                dynamicVotingArea.appendChild(clone);
 
                 // ===== CENTRAL STATE: all scoring lives here, NOT in the DOM =====
                 const escScoreBoard = {};
@@ -4155,8 +4216,9 @@
 
                 document.getElementById('nextJuryButton').addEventListener('click', revealNextJury);
 
-                function revealNextTele() {
-                    // Guard: rows is only initialized once "Reveal Televoting" is pressed.
+                const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+                async function revealNextTele() {
                     if (!Array.isArray(rows)) {
                         console.warn('revealNextTele called before televoting was started.');
                         return;
@@ -4171,7 +4233,6 @@
                             return;
                         }
 
-                        // Update state first
                         const telePoints = results[country].teleTotal;
                         escScoreBoard[country].telePoints = telePoints;
                         escScoreBoard[country].totalPoints = escScoreBoard[country].juryPoints + telePoints;
@@ -4186,22 +4247,19 @@
                             return;
                         }
 
-                        setTimeout(() => {
-                            // Render state to DOM via renderEscScores (called by updateTable)
-                            const telePointsCell = row.querySelector('.tele-points');
-                            if (telePointsCell) telePointsCell.classList.add('tele-points-revealed', 'fade-in');
-                            countryNameCell.classList.add('tele-points-revealed', 'fade-in');
-                            row.classList.add('highlight');
-                            row.classList.remove('current-televote');
-                            setTimeout(() => {
-                                row.classList.remove('highlight');
-                            }, 800);
-                            setTimeout(updateTable, 800);
-                            currentTeleIndex++;
-                            if (currentTeleIndex === rows.length) {
-                                document.getElementById('revealTelevotingButton').style.display = 'none';
-                            }
-                        }, 1000);
+                        await delay(1000);
+                        const telePointsCell = row.querySelector('.tele-points');
+                        if (telePointsCell) telePointsCell.classList.add('tele-points-revealed', 'fade-in');
+                        countryNameCell.classList.add('tele-points-revealed', 'fade-in');
+                        row.classList.add('highlight');
+                        row.classList.remove('current-televote');
+                        await delay(800);
+                        row.classList.remove('highlight');
+                        updateTable();
+                        currentTeleIndex++;
+                        if (currentTeleIndex === rows.length) {
+                            document.getElementById('revealTelevotingButton').style.display = 'none';
+                        }
                     }
                 }
 
@@ -4260,11 +4318,11 @@
                 });
 
                 // Reset genre likeability
-                genres.forEach(genre => genreLikeability[genre] = 3);
+                state.genres.forEach(genre => state.genreLikeability[genre] = 3);
                 updateGenreLikeabilityUI();
 
                 // Reset scenography likeability
-                scenographies.forEach(scenography => scenographyLikeability[scenography] = 3);
+                state.scenographies.forEach(scenography => state.scenographyLikeability[scenography] = 3);
                 updateScenographyLikeabilityUI();
 
                 // Reset min and max odds
@@ -4296,10 +4354,10 @@
                 }
 
                 // Reset results variables
-                semiFinal1Results = null;
-                semiFinal2Results = null;
-                finalResults = null;
-                currentSemiFinal = 1;
+                state.semiFinal1Results = null;
+                state.semiFinal2Results = null;
+                state.finalResults = null;
+                state.currentSemiFinal = 1;
 
                 // Reset button states
                 document.getElementById('generateButton').disabled = false;
@@ -4630,9 +4688,6 @@
                 whatsNewModal.show();
             });
             updateAQCheckboxStatus();
-            // NOTE: DOMContentLoaded has already fired by the time this script runs
-            // (the <script> tag sits at the end of <body>), so registering a listener
-            // for it here would never trigger. The direct call above is sufficient.
 
 
             // ===================================================================
@@ -4680,7 +4735,7 @@
                 const notFound = [];
                 const aqTargetCheckboxes = [];
                 targetCountries.forEach(name => {
-                    const cb = document.querySelector(`.country-checkbox[value="${CSS.escape(name)}"]`);
+                    const cb = Array.from(document.querySelectorAll('.country-checkbox')).find(c => c.value === name);
                     if (!cb) {
                         notFound.push(name);
                         return;
@@ -4768,8 +4823,8 @@
 
             // ---- Export CSV ----
             function buildResultsCsv() {
-                if (!finalResults || !finalResults.results) return null;
-                const { results } = finalResults;
+                if (!state.finalResults || !state.finalResults.results) return null;
+                const { results } = state.finalResults;
                 const competing = Object.keys(results).filter(c => results[c].isCompeting);
                 competing.sort((a, b) => {
                     const tA = results[a].juryTotal + results[a].teleTotal;
@@ -4855,7 +4910,7 @@
                     const scenario = collectScenarioData();
                     const json = JSON.stringify(scenario);
                     // Use a URI-safe variant of base64
-                    const b64 = btoa(unescape(encodeURIComponent(json)))
+                    const b64 = btoa(String.fromCharCode(...new TextEncoder().encode(json)))
                         .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
                     return b64;
                 } catch (err) {
@@ -4868,7 +4923,7 @@
                     if (!hash || !hash.startsWith('s=')) return null;
                     const b64 = hash.slice(2).replace(/-/g, '+').replace(/_/g, '/');
                     const padded = b64 + '==='.slice((b64.length + 3) % 4);
-                    const json = decodeURIComponent(escape(atob(padded)));
+                    const json = new TextDecoder().decode(Uint8Array.from(atob(padded), c => c.charCodeAt(0)));
                     return JSON.parse(json);
                 } catch (err) {
                     console.error('decodeScenarioFromHash:', err);
@@ -4994,7 +5049,7 @@
             const exportCsvBtn = document.getElementById('exportCsvButton');
             const exportPngBtn = document.getElementById('exportPngButton');
             function refreshExportButtons() {
-                const hasResults = !!(finalResults && finalResults.results);
+                const hasResults = !!(state.finalResults && state.finalResults.results);
                 exportCsvBtn.disabled = !hasResults;
                 exportPngBtn.disabled = !hasResults;
             }
@@ -5002,7 +5057,21 @@
             generateButton.addEventListener('click', () => setTimeout(refreshExportButtons, 1100));
             document.getElementById('resetButton').addEventListener('click', () => setTimeout(refreshExportButtons, 50));
 
+            // Leaderboard refresh button
+            document.getElementById('refreshLeaderboardBtn').addEventListener('click', loadLeaderboard);
 
+            // Leaderboard toggle button
+            document.getElementById('toggleLeaderboardBtn').addEventListener('click', () => {
+                const row = document.getElementById('leaderboardRow');
+                if (row.style.display === 'none') {
+                    row.style.display = '';
+                    loadLeaderboard();
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            })();
 
         </script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
