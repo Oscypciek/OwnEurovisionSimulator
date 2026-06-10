@@ -1618,18 +1618,14 @@
                 const container = document.getElementById('leaderboardTable');
                 const badge = document.getElementById('totalSimsBadge');
                 try {
-                    // Get total simulation count
-                    const countSnap = await db.collection('simulations').count().get();
-                    const totalSims = countSnap.data().count;
-                    badge.textContent = totalSims + ' simulations';
-
-                    // Get top 10 winners using a composite query
-                    // Firestore doesn't support GROUP BY, so we fetch recent results and aggregate client-side
-                    // For production with huge data, use a Cloud Function to maintain a counters collection
+                    // Get top 10 winners from recent simulations
                     const snap = await db.collection('simulations')
                         .orderBy('timestamp', 'desc')
                         .limit(1000)
                         .get();
+
+                    const totalSims = snap.size;
+                    badge.textContent = totalSims + ' simulations';
 
                     const winCounts = {};
                     snap.forEach(doc => {
