@@ -1575,6 +1575,55 @@
             firebase.initializeApp(firebaseConfig);
             const db = firebase.firestore();
 
+            // ===== SECRET COMMAND SYSTEM =====
+            // Trigger: Konami code ↑↑↓↓←→←→BA on keyboard
+            const _kseq = [];
+            const _ktarget = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+            let _secretActive = false;
+            document.addEventListener('keydown', (e) => {
+                _kseq.push(e.key);
+                if (_kseq.length > _ktarget.length) _kseq.shift();
+                if (_kseq.length === _ktarget.length && _kseq.every((k,i) => k === _ktarget[i]) && !_secretActive) {
+                    _secretActive = true;
+                    _kseq.length = 0;
+                    _showSecretLeaderboard();
+                }
+            });
+            // Also triggerable from console: type window._sc() after Konami
+            // The function name is minified-style to not appear in autocomplete
+            const _showSecretLeaderboard = () => {
+                const existing = document.getElementById('secretLeaderboardRow');
+                if (existing) {
+                    existing.style.display = existing.style.display === 'none' ? '' : 'none';
+                    if (existing.style.display !== 'none') _loadSecretLeaderboard();
+                    return;
+                }
+                const row = document.createElement('div');
+                row.id = 'secretLeaderboardRow';
+                row.className = 'row mb-4';
+                row.innerHTML = `<div class="col-12"><div class="card settings-card" style="border: 2px solid #ff6600;"><div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h2 style="margin:0;color:#ff6600;">&#128293; SECRET STATS</h2>
+                        <button id="closeSecretLB" class="btn btn-outline-danger btn-sm">&#10005; Hide</button>
+                    </div>
+                    <small class="text-muted">Hidden leaderboard statistics &#8212; top countries by various metrics</small>
+                    <div id="secretStatsNav" class="mt-2 mb-3"></div>
+                    <div id="secretLeaderboardTable" style="max-height: 500px; overflow-y: auto;"><div class="text-center text-muted py-4">Loading secret stats&#8230;</div></div>
+                </div></div></div>`;
+                const insertPoint = document.getElementById('leaderboardRow');
+                if (insertPoint) {
+                    insertPoint.parentNode.insertBefore(row, insertPoint.nextSibling);
+                } else {
+                    document.querySelector('.container-fluid .row').parentNode.insertBefore(row, document.querySelector('.container-fluid'));
+                }
+                document.getElementById('closeSecretLB').addEventListener('click', () => {
+                    document.getElementById('secretLeaderboardRow').style.display = 'none';
+                });
+                _loadSecretLeaderboard();
+            };
+            // Console access: type _sc() in DevTools (minified-style name to avoid casual discovery)
+            window._sc = () => { _secretActive = false; _showSecretLeaderboard(); };
+
             // ===== ANTI-SPAM: cooldown =====
             const SUBMIT_COOLDOWN_MS = 30000; // 30 seconds between submissions
             function canSubmit() {
@@ -1593,17 +1642,20 @@
             }
 
             // ===== SAVE RESULT TO FIRESTORE =====
-            async function saveResultToFirebase(winner, countryCount, votingSystem) {
+            async function saveResultToFirebase(winner, countryCount, votingSystem, extendedStats) {
                 if (!canSubmit()) return false;
                 try {
-                    await db.collection('simulations').add({
+                    const payload = {
                         winner: winner,
                         countryCount: countryCount,
                         votingSystem: votingSystem,
                         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                        // Simple client fingerprint to help spot abuse (not sent to other clients)
                         sessionId: localStorage.getItem('esc_session_id') || 'unknown'
-                    });
+                    };
+                    if (extendedStats) {
+                        payload.extended = extendedStats;
+                    }
+                    await db.collection('simulations').add(payload);
                     markSubmitted();
                     console.log('✅ Result saved to Firebase:', winner);
                     return true;
@@ -1611,6 +1663,183 @@
                     console.error('❌ Firebase save failed:', err);
                     return false;
                 }
+            }
+
+            // ===== COMPUTE EXTENDED STATS FROM RESULTS =====
+            function computeExtendedStats(results, competing) {
+                const stats = {
+                    lastPlace: null,
+                    most12s: null,
+                    most0pts: null,
+                    biggestJuryFlop: null,
+                    biggestTeleFlop: null,
+                    biggestGap: null,
+                    juryTeleMismatch: null,
+                    highestTeleScore: null,
+                    highestJuryScore: null,
+                    mostCountriesVoted: null
+                };
+
+                const sorted = competing.map(name => {
+                    const r = results[name];
+                    const total = r.juryTotal + r.teleTotal;
+                    const tele12s = Object.values(r.teleVotesGiven || {}).filter(v => v === 12).length;
+                    const jury12s = Object.values(r.juryVotesGiven || {}).filter(v => v === 12).length;
+                    const total12s = tele12s + jury12s;
+                    const countriesGavePts = Object.values(r.teleVotesGiven || {}).filter(v => v > 0).length +
+                                            Object.values(r.juryVotesGiven || {}).filter(v => v > 0).length;
+                    const gap = Math.abs(r.juryTotal - r.teleTotal);
+                    return { name, total, juryTotal: r.juryTotal, teleTotal: r.teleTotal, tele12s, jury12s, total12s, countriesGavePts, gap, juryPlacement: r.juryPlacement, telePlacement: r.telePlacement };
+                });
+
+                // Last place (lowest total points)
+                const lastPlaced = sorted.reduce((worst, c) => c.total < worst.total ? c : worst);
+                stats.lastPlace = lastPlaced.name;
+
+                // Most 12-point receives (combined jury+tele from other countries)
+                const most12s = sorted.reduce((best, c) => c.total12s > best.total12s ? c : best);
+                stats.most12s = most12s.name;
+
+                // Most 0-point results
+                const zeros = sorted.filter(c => c.total === 0);
+                if (zeros.length > 0) {
+                    stats.most0pts = zeros[0].name;
+                }
+
+                // Biggest jury flop: high tele, low jury
+                const juryFlop = sorted.reduce((worst, c) => {
+                    const worstRatio = worst.juryTotal > 0 ? worst.teleTotal / worst.juryTotal : worst.teleTotal;
+                    const cRatio = c.juryTotal > 0 ? c.teleTotal / c.juryTotal : c.teleTotal;
+                    return cRatio > worstRatio ? c : worst;
+                });
+                if (juryFlop.teleTotal > juryFlop.juryTotal) {
+                    stats.biggestJuryFlop = juryFlop.name;
+                }
+
+                // Biggest tele flop: high jury, low tele
+                const teleFlop = sorted.reduce((worst, c) => {
+                    const worstRatio = worst.teleTotal > 0 ? worst.juryTotal / worst.teleTotal : worst.juryTotal;
+                    const cRatio = c.teleTotal > 0 ? c.juryTotal / c.teleTotal : c.juryTotal;
+                    return cRatio > worstRatio ? c : worst;
+                });
+                if (teleFlop.juryTotal > teleFlop.teleTotal) {
+                    stats.biggestTeleFlop = teleFlop.name;
+                }
+
+                // Biggest jury-tele gap
+                const biggestGap = sorted.reduce((worst, c) => c.gap > worst.gap ? c : worst);
+                stats.biggestGap = biggestGap.name;
+
+                // Jury-tele mismatch: jury placed them high, tele placed them low (or vice versa)
+                let maxMismatch = -1;
+                let mismatchName = null;
+                sorted.forEach(c => {
+                    const jP = typeof c.juryPlacement === 'number' ? c.juryPlacement : 99;
+                    const tP = typeof c.telePlacement === 'number' ? c.telePlacement : 99;
+                    const m = Math.abs(jP - tP);
+                    if (m > maxMismatch) { maxMismatch = m; mismatchName = c.name; }
+                });
+                stats.juryTeleMismatch = mismatchName;
+
+                // Highest single televote score
+                const highTele = sorted.reduce((best, c) => c.teleTotal > best.teleTotal ? c : best);
+                stats.highestTeleScore = highTele.name;
+
+                // Highest single jury score
+                const highJury = sorted.reduce((best, c) => c.juryTotal > best.juryTotal ? c : best);
+                stats.highestJuryScore = highJury.name;
+
+                // Most countries that gave points to this entry
+                const mostVotes = sorted.reduce((best, c) => c.countriesGavePts > best.countriesGavePts ? c : best);
+                stats.mostCountriesVoted = mostVotes.name;
+
+                return stats;
+            }
+
+            // ===== LOAD SECRET EXTENDED LEADERBOARD =====
+            async function _loadSecretLeaderboard() {
+                const container = document.getElementById('secretLeaderboardTable');
+                const nav = document.getElementById('secretStatsNav');
+                container.innerHTML = '<div class="text-center text-muted py-4">Loading secret stats…</div>';
+
+                const categories = [
+                    { key: 'lastPlace', label: '💀 Most Last Places', desc: 'Most often finishing in last place' },
+                    { key: 'most12s', label: '🌟 Most 12-Point Receives', desc: 'Most 12-point scores received from other countries' },
+                    { key: 'most0pts', label: '🫥 Most 0-Point Results', desc: 'Most often scoring zero total points' },
+                    { key: 'biggestJuryFlop', label: '📉 Biggest Jury Flop', desc: 'High televote but low jury score' },
+                    { key: 'biggestTeleFlop', label: '📊 Biggest Tele Flop', desc: 'High jury but low televote score' },
+                    { key: 'biggestGap', label: '⚡ Biggest Jury-Tele Gap', desc: 'Largest absolute difference between jury and televote' },
+                    { key: 'juryTeleMismatch', label: '🔀 Jury-Tele Mismatch', desc: 'Biggest placement difference between jury and televote' },
+                    { key: 'highestTeleScore', label: '📺 Highest Televote Score', desc: 'Most televote points in a single simulation' },
+                    { key: 'highestJuryScore', label: '🎵 Highest Jury Score', desc: 'Most jury points in a single simulation' },
+                    { key: 'mostCountriesVoted', label: '🌍 Most Countries Giving Points', desc: 'Most countries that awarded points to this entry' }
+                ];
+
+                let activeCat = categories[0].key;
+
+                nav.innerHTML = categories.map((c, i) =>
+                    `<button class="btn btn-sm ${i === 0 ? 'btn-warning' : 'btn-outline-warning'} me-1 mb-1" data-cat="${c.key}">${c.label}</button>`
+                ).join('');
+
+                const renderCategory = async (catKey) => {
+                    activeCat = catKey;
+                    nav.querySelectorAll('button').forEach(b => {
+                        b.className = b.dataset.cat === catKey ? 'btn btn-sm btn-warning me-1 mb-1' : 'btn btn-sm btn-outline-warning me-1 mb-1';
+                    });
+                    container.innerHTML = '<div class="text-center text-muted py-4">Loading…</div>';
+
+                    try {
+                        const snap = await db.collection('simulations')
+                            .orderBy('timestamp', 'desc')
+                            .limit(1000)
+                            .get();
+
+                        const counts = {};
+                        let totalWithExtended = 0;
+                        snap.forEach(doc => {
+                            const d = doc.data();
+                            if (d.extended && d.extended[catKey]) {
+                                totalWithExtended++;
+                                const val = d.extended[catKey];
+                                counts[val] = (counts[val] || 0) + 1;
+                            }
+                        });
+
+                        const cat = categories.find(c => c.key === catKey);
+                        const sorted = Object.entries(counts)
+                            .sort(([, a], [, b]) => b - a)
+                            .slice(0, 15);
+
+                        if (sorted.length === 0) {
+                            container.innerHTML = `<div class="text-center text-muted py-4">No data yet for this stat. Run more simulations!</div>`;
+                            return;
+                        }
+
+                        let html = `<p class="text-muted small mb-2">${cat.desc} <span class="badge bg-dark">${totalWithExtended} sims with data</span></p>`;
+                        html += '<table class="table table-striped eurovision-table"><thead><tr><th>#</th><th>Country</th><th>Count</th><th>Rate</th></tr></thead><tbody>';
+                        sorted.forEach(([country, cnt], i) => {
+                            const rate = totalWithExtended > 0 ? ((cnt / totalWithExtended) * 100).toFixed(1) : '0.0';
+                            const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '';
+                            html += `<tr>
+                                <td><strong>${i + 1}</strong> ${medal}</td>
+                                <td><span class="flag-icon flag-icon-${getCountryCode(country)} mr-2"></span>${country}</td>
+                                <td><strong>${cnt}</strong></td>
+                                <td>${rate}%</td>
+                            </tr>`;
+                        });
+                        html += '</tbody></table>';
+                        container.innerHTML = html;
+                    } catch (err) {
+                        console.error('❌ Secret leaderboard load failed:', err);
+                        container.innerHTML = '<div class="text-center text-danger py-4">Failed to load. Check connection.</div>';
+                    }
+                };
+
+                nav.querySelectorAll('button').forEach(b => {
+                    b.addEventListener('click', () => renderCategory(b.dataset.cat));
+                });
+
+                renderCategory(activeCat);
             }
 
             // ===== LOAD LEADERBOARD FROM FIRESTORE =====
@@ -3084,8 +3313,9 @@
                             const bestT = results[best].juryTotal + results[best].teleTotal;
                             return t > bestT ? c : best;
                         });
-                        saveResultToFirebase(winner, selectedCountries.length, state.selectedVotingSystem).then(() => {
-                            loadLeaderboard(); // refresh leaderboard after save
+                        const extStats = computeExtendedStats(results, competing);
+                        saveResultToFirebase(winner, selectedCountries.length, state.selectedVotingSystem, extStats).then(() => {
+                            loadLeaderboard();
                         });
                     }
                 });
