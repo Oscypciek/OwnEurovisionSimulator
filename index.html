@@ -1786,17 +1786,14 @@
                     nav.querySelectorAll('button').forEach(b => {
                         b.className = b.dataset.cat === catKey ? 'btn btn-sm btn-warning me-1 mb-1' : 'btn btn-sm btn-outline-warning me-1 mb-1';
                     });
-                    container.innerHTML = '<div class="text-center text-muted py-4">Loading…</div>';
+                    container.innerHTML = '<div class="text-center text-muted py-4">Loading all simulations…</div>';
 
                     try {
-                        const snap = await db.collection('simulations')
-                            .orderBy('timestamp', 'desc')
-                            .limit(1000)
-                            .get();
+                        const allDocs = await fetchAllDocs('simulations');
 
                         const counts = {};
                         let totalWithExtended = 0;
-                        snap.forEach(doc => {
+                        allDocs.forEach(doc => {
                             const d = doc.data();
                             if (d.extended && d.extended[catKey]) {
                                 totalWithExtended++;
@@ -1811,7 +1808,7 @@
                             .slice(0, 15);
 
                         if (sorted.length === 0) {
-                            container.innerHTML = `<div class="text-center text-muted py-4">No data yet for this stat. Run more simulations!</div>`;
+                            container.innerHTML = `<div class="text-center text-muted py-4">No data yet for this stat (${allDocs.length} sims scanned).<br>Extended stats are saved from new simulations.</div>`;
                             return;
                         }
 
@@ -1842,24 +1839,40 @@
                 renderCategory(activeCat);
             }
 
+            // ===== FETCH ALL DOCS FROM A COLLECTION (paginated, no limit) =====
+            async function fetchAllDocs(collectionName, orderByField = 'timestamp') {
+                const allDocs = [];
+                const COLLECTION_SIZE_ESTIMATE = 50000;
+                const BATCH_SIZE = 500;
+                let lastDoc = null;
+                let fetched = 0;
+                while (fetched < COLLECTION_SIZE_ESTIMATE) {
+                    let q = db.collection(collectionName).orderBy(orderByField, 'desc').limit(BATCH_SIZE);
+                    if (lastDoc) q = q.startAfter(lastDoc);
+                    const snap = await q.get();
+                    if (snap.empty) break;
+                    snap.forEach(d => allDocs.push(d));
+                    fetched += snap.size;
+                    lastDoc = snap.docs[snap.docs.length - 1];
+                    if (snap.size < BATCH_SIZE) break;
+                }
+                return allDocs;
+            }
+
             // ===== LOAD LEADERBOARD FROM FIRESTORE =====
             async function loadLeaderboard() {
                 const container = document.getElementById('leaderboardTable');
                 const badge = document.getElementById('totalSimsBadge');
                 try {
-                    // Get top 10 winners from recent simulations
-                    const snap = await db.collection('simulations')
-                        .orderBy('timestamp', 'desc')
-                        .limit(1000)
-                        .get();
-
-                    const totalSims = snap.size;
+                    container.innerHTML = '<div class="text-center text-muted py-4">Loading all simulations…</div>';
+                    const allDocs = await fetchAllDocs('simulations');
+                    const totalSims = allDocs.length;
                     badge.textContent = totalSims + ' simulations';
 
                     const winCounts = {};
-                    snap.forEach(doc => {
+                    allDocs.forEach(doc => {
                         const w = doc.data().winner;
-                        winCounts[w] = (winCounts[w] || 0) + 1;
+                        if (w) winCounts[w] = (winCounts[w] || 0) + 1;
                     });
 
                     const sorted = Object.entries(winCounts)
@@ -1883,7 +1896,7 @@
                         </tr>`;
                     });
                     html += '</tbody></table>';
-                    html += `<small class="text-muted">Based on last ${snap.size} simulations</small>`;
+                    html += `<small class="text-muted">Based on all ${totalSims} simulations</small>`;
                     container.innerHTML = html;
                 } catch (err) {
                     console.error('❌ Leaderboard load failed:', err);
