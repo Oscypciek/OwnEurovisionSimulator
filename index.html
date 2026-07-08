@@ -1909,6 +1909,11 @@
                 localStorage.setItem('esc_session_id', 'sess_' + Math.random().toString(36).substr(2, 9));
             }
 
+            // Top-level async delay helper. Shared by all async reveal/animation
+            // functions (semi-final draw, qualifier reveal, dynamic voting) so they
+            // don't depend on a closure-scoped copy that may not exist yet.
+            const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
             // ===== CENTRAL STATE =====
             const state = {
                 currentContestants: [],
@@ -4454,8 +4459,6 @@
                 }
 
                 document.getElementById('nextJuryButton').addEventListener('click', revealNextJury);
-
-                const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
                 async function revealNextTele() {
                     if (!Array.isArray(rows)) {
